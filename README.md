@@ -62,7 +62,26 @@ including a little owl heard in the small hours.
 
 Then open `http://<your-server>:8095`. `BIRDNET_URL` is the address of
 your BirdNET-Go as the container can reach it: use the server's IP, not
-`localhost`. That is the only setting.
+`localhost`. That is the only setting most people need.
+
+`BIRDSONG_PORT` moves the page off port 80 **inside** the container. With
+`-p` that is never necessary, since the port inside is the container's own;
+it matters when the container shares the host's network and something there
+already holds 80:
+
+    docker run -d --name birdsong --restart unless-stopped \
+      --network host \
+      -e BIRDSONG_PORT=8095 \
+      -e BIRDNET_URL=http://192.168.1.50:8080 \
+      ghcr.io/dopeytree/birdsong:latest
+
+Anything that is not a port number is refused and 80 used instead, with a
+line saying so in the container's log.
+
+To change the web server's configuration beyond that, mount your own copy
+over `/etc/nginx/templates/default.conf.template`. Mounting over the rendered
+`/etc/nginx/conf.d/default.conf` will not work: it is written afresh from the
+template on every start.
 
 - **Unraid:** see [Unraid](#unraid) below -- it is in the app store.
 - **Compose:** see `docker-compose.yml`.

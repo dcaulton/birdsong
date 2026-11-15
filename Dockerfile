@@ -13,7 +13,12 @@ FROM nginx:alpine
 # apologising for not reaching a station nobody named. Set it to your
 # BirdNET-Go, e.g. http://192.168.1.50:8080 or http://birdnet-go:8080.
 ENV BIRDNET_URL=""
+# The port the page is served on, inside the container. Published with -p in
+# most setups, so it rarely needs changing; it does when the container shares
+# the host's network and something else already holds 80.
+ENV BIRDSONG_PORT=80
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
+COPY --chmod=755 nginx/03-port.envsh /docker-entrypoint.d/03-port.envsh
 COPY --chmod=755 nginx/04-ha-options.envsh /docker-entrypoint.d/04-ha-options.envsh
 COPY --chmod=755 nginx/05-birdnet-url.envsh /docker-entrypoint.d/05-birdnet-url.envsh
 COPY html/ /usr/share/nginx/html/
@@ -22,6 +27,9 @@ COPY --from=art /art/ /usr/share/nginx/html/art/
 # `-g "daemon off;"` argument: wrappers that re-launch the command (Unraid's
 # Tailscale hook) split that argument at the space and nginx refuses to start.
 RUN sed -i '1i daemon off;' /etc/nginx/nginx.conf
+# Metadata only, and it cannot be worked out from BIRDSONG_PORT at build time;
+# -p decides what is published. The health check is run by a shell inside the
+# container, so it reads the variable as set there.
 EXPOSE 80
-HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1/healthz || exit 1
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- "http://127.0.0.1:${BIRDSONG_PORT:-80}/healthz" || exit 1
 CMD ["nginx"]

@@ -1,0 +1,20 @@
+#!/bin/sh
+# --- which port the page is served on ----------------------------------------
+# Published with -p in most setups, where the port inside the container never
+# matters. It does matter when the container shares the host's network and
+# something else already holds 80, so it can be moved with BIRDSONG_PORT.
+#
+# Checked here rather than trusted: an empty or mistyped value would render
+# "listen ;" and nginx would not start at all, which is a worse day than a
+# busy port.
+given=${BIRDSONG_PORT:-80}
+plain=$(printf '%s' "$given" | sed 's/^0*//')   # 00080 is 80, and not octal
+case "$given" in
+  ""|*[!0-9]*) port=80 ;;
+  *) if [ -n "$plain" ] && [ "$plain" -ge 1 ] && [ "$plain" -le 65535 ]
+     then port=$plain; else port=80; fi ;;
+esac
+if [ "$port" != "$given" ]; then
+  echo "birdsong: BIRDSONG_PORT='$given' is not a port number; serving on 80" >&2
+fi
+export BIRDSONG_PORT="$port"

@@ -1,6 +1,9 @@
-# Rendered at container start: ${BIRDNET_URL} comes from the environment.
+# Rendered at container start: ${BIRDNET_URL} and ${BIRDSONG_PORT} come from
+# the environment. To change anything else here, mount your own copy over
+# /etc/nginx/templates/default.conf.template -- the rendered file in conf.d is
+# written afresh on every start and an edit to it will not survive.
 server {
-    listen 80;
+    listen ${BIRDSONG_PORT};
     root /usr/share/nginx/html;
     index index.html;
 
