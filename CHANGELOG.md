@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- `BIRDSONG_PORT` moves the page off port 80 inside the container, for anyone
+  sharing the host's network with something that already holds it. Eighty
+  still, unless it is set, so nothing changes for anybody else. A value that
+  is not a port number is refused rather than stopping the server.
+
 - No station is guessed at. The image used to assume `http://birdnet-go:8080`
   and the Unraid template filled in an address belonging to nobody, so a fresh
   install reported that it could not reach a station that had never been named.
