@@ -255,7 +255,7 @@ on the view:
 | `periods` | today / seven days / thirty days / all | page, collage, index |
 | `plate` | the collage of birds | page, collage, index |
 | `index` | the index of species | page, collage, index |
-| `mark` | how the creature heard last is marked, and its name in red in the index; `mark=below` puts the dot under it instead of over its centre, `mark=fade` drops the dot and stands the rest of the plate back a tenth instead | page, collage, index |
+| `mark` | how the creature heard last is marked, and its name in red in the index; `mark=below` puts the dot under it instead of over its centre, `mark=fade` drops the dot and stands the rest of the plate back two fifths instead | page, collage, index |
 | `name` | the bird's common name | the one-bird views |
 | `sci` | the bird's scientific name | the one-bird views |
 | `time` | when it was heard, *1:59 PM* — **off unless asked for** | `latest` |
@@ -271,9 +271,11 @@ puts the date and the period buttons back above it. Going the other way,
 |---|---|
 | `period=today` `week` `month` `all` | fixes the period for that card, whatever the page is set to |
 | `limit=20` | shows only the twenty most-heard species |
+| `size=calls` `time` `equal` | what decides a creature's size on the collage: how often it called, how lately it called, or nothing — all of a size |
 
 `limit` is worth setting on an index card, which otherwise scrolls, and on
-a collage card to keep the birds large.
+a collage card to keep the birds large. `size=equal` suits a plate of a
+handful of species, where one loud bird would otherwise dwarf the rest.
 
 ### Examples
 
@@ -363,7 +365,8 @@ time so the panel stays on the screen:
 - **Show** — one-screen mode and a switch for each part of the page:
   title, date, species and call totals, plate number, period buttons, the
   index and the collage. Beneath the collage sit what decides a
-  creature's size and how the one heard last is marked, then whether the
+  creature's size — its calls, how lately it called, or nothing at all —
+  and how the one heard last is marked, then whether the
   parts plates are offered, and last *Limit species*, to cap how many
   birds are drawn. These are the same parts a card address names with
   `hide=` and `show=`.

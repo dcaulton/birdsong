@@ -324,7 +324,7 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
       <label class="check"><input type="checkbox" data-opt="index"> Index of species</label>
       <label class="check"><input type="checkbox" data-opt="plate"> The collage of birds</label>
       <label class="check">Size the collage by
-        <select id="sizeBy" aria-label="What decides a creature's size"><option value="calls">Nosiest species</option><option value="time">Recent ramblings</option></select></label>
+        <select id="sizeBy" aria-label="What decides a creature's size"><option value="calls">Nosiest species</option><option value="time">Recent ramblings</option><option value="equal">All of a size</option></select></label>
       <label class="check"><input type="checkbox" data-opt="mark"> Mark the beast
         <select id="markAt" aria-label="How it is marked"><option value="centre">a dot over its centre</option><option value="below">a dot below it</option><option value="fade">the rest of them faded</option></select></label>
       <label class="check"><input type="checkbox" id="partsOpt"> Offer skulls, wings and eggs among the plates</label>
@@ -494,9 +494,13 @@ const markPlace = v => {
   return MARK_AT.includes(t) ? t : "centre";
 };
 opt.markAt = markPlace(params.get("mark") || store.get("markAt", "centre"));
-// what decides a creature's size on the plate: how often it called, or how
-// lately (&size=time)
-const sizeKind = v => /^time$/i.test(String(v || "")) ? "time" : "calls";
+// what decides a creature's size on the plate: how often it called, how
+// lately (&size=time), or nothing at all (&size=equal)
+const SIZE_BY = ["calls", "time", "equal"];
+const sizeKind = v => {
+  const t = String(v || "").toLowerCase();
+  return SIZE_BY.includes(t) ? t : "calls";
+};
 opt.sizeBy = sizeKind(params.get("size") || store.get("sizeBy", "calls"));
 if (view === "latest") opt.time = false;              // the time is off by default: the card is prettier without it
 opt.limit = Math.max(0, Number(params.get("limit")) || store.get("limit", 0));
@@ -976,11 +980,11 @@ function layout() {
   if (!shown.length || !CW || !CH) return;
   /* Sized by time it is the order that counts, not the gap: a morning's birds
      would otherwise come out all of a size, and one from yesterday a speck. */
-  const byTime = opt.sizeBy === "time", place = new Map();
+  const byTime = opt.sizeBy === "time", alike = opt.sizeBy === "equal", place = new Map();
   if (byTime) shown.forEach((s, i) => place.set(s.sci, shown.length - i));
-  const max = byTime ? shown.length : shown[0].count, ar = CW / CH;
+  const max = alike ? 1 : byTime ? shown.length : shown[0].count, ar = CW / CH;
   const items = shown.map(s => {
-    const weight = byTime ? place.get(s.sci) : s.count;
+    const weight = alike ? 1 : byTime ? place.get(s.sci) : s.count;
     const f = figures.get(s.sci), scale = Math.max(.2, Math.pow(weight / max, .45)), area = f.blank ? .03 : scale * scale;
     return { s, f, w: Math.sqrt(area * f.aspect), h: Math.sqrt(area / f.aspect) };
   }).sort((a, b) => b.w * b.h - a.w * a.h);
