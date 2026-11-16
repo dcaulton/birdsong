@@ -2,9 +2,9 @@
 
 ## Unreleased
 
-- The mark on the creature heard last swells with it under the pointer, by the
-  same sixteenth the figure grows, so it belongs to the bird rather than
-  floating over it. Both where it sits, over the centre and below.
+- The mark on the creature heard last swells with it under the pointer, over
+  the same quarter second the figure takes to grow. Both where it sits, over
+  the centre and below.
 
 - The collage can be drawn by how lately a creature called rather than how
   often: the latest largest, the oldest smallest. It then draws the latest

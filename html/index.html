@@ -59,12 +59,13 @@ nav button:hover{color:var(--ink)}
 .bird.newest::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   width:.5rem;height:.5rem;border-radius:50%;background:var(--madder);opacity:.9;
   box-shadow:0 0 4px var(--paper);pointer-events:none;transition:transform .25s ease-out}
-/* and it swells with the creature under the pointer, to the same sixteenth, so
-   the mark belongs to the figure rather than floating over it */
-.bird.newest:hover::after,.bird.newest:focus-visible::after{transform:translate(-50%,-50%) scale(1.06)}
+/* and it swells with the creature under the pointer, over the same quarter
+   second. Half again, not the sixteenth the figure grows: a sixteenth of eight
+   pixels is half a pixel, which is growth nobody can see. */
+.bird.newest:hover::after,.bird.newest:focus-visible::after{transform:translate(-50%,-50%) scale(1.5)}
 /* or tucked close under the figure, for those who would rather the plate were left alone */
 body.mark-below .bird.newest::after{top:100%;transform:translate(-50%,-70%)}
-body.mark-below .bird.newest:hover::after,body.mark-below .bird.newest:focus-visible::after{transform:translate(-50%,-70%) scale(1.06)}
+body.mark-below .bird.newest:hover::after,body.mark-below .bird.newest:focus-visible::after{transform:translate(-50%,-70%) scale(1.5)}
 /* or nothing laid on at all: the rest of the plate stands back two fifths
    instead, and the one heard last is the only creature at full strength.
    has-newest says the plate really is showing the creature heard last: a
