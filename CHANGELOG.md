@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- The mark on the creature heard last swells with it under the pointer, over
+  the same quarter second the figure takes to grow. Both where it sits, over
+  the centre and below.
+
 - The collage can be drawn by how lately a creature called rather than how
   often: the latest largest, the oldest smallest. It then draws the latest
   creatures rather than the busiest, so the one just heard is certain to be on
