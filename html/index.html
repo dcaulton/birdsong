@@ -57,9 +57,20 @@ nav button:hover{color:var(--ink)}
 .bird:hover>*,.bird:focus-visible>*{transform:scale(1.06)}
 .bird>img{object-fit:contain}
 .bird>span{display:grid;place-items:center;text-align:center;font-style:italic;font-size:clamp(.6rem,1.1vw,.9rem);line-height:1.15;color:var(--sepia);border:1px solid var(--rule);border-radius:50%;padding:.2em .6em}
-#status{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-style:italic;color:var(--sepia);font-size:1.15rem;padding:2rem;pointer-events:none}
-#status:empty{display:none}
+#status{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:.9rem;text-align:center;font-style:italic;color:var(--sepia);font-size:1.15rem;padding:2rem;pointer-events:none}
+#status.idle{display:none}
 #status button{pointer-events:auto;text-decoration:underline;text-underline-offset:3px;font-style:italic}
+/* While the plates are being gathered: a hairline rule that fills as each one
+   arrives, with a slow sheen travelling along it so a long wait on a slow
+   lookup does not look like a page that has given up. */
+#load{display:block;position:relative;width:min(13rem,52vw);height:2px;background:var(--rule);overflow:hidden}
+#load[hidden]{display:none}
+#load i{position:absolute;inset:0;background:var(--madder);transform:scaleX(var(--p,0));transform-origin:left;transition:transform .45s ease-out}
+#load::after{content:"";position:absolute;top:0;bottom:0;width:34%;left:-34%;
+  background:linear-gradient(90deg,transparent,rgba(140,59,42,.5),transparent);   /* madder, half strength */
+  animation:along 1.6s linear infinite}
+@keyframes along{to{left:100%}}
+@media (prefers-reduced-motion:reduce){#load::after{animation:none}}
 
 #tip{position:fixed;z-index:20;pointer-events:none;background:var(--paper);border:1px solid var(--rule);box-shadow:0 0 0 3px var(--paper),0 0 0 4px var(--rule),0 6px 18px rgba(60,40,10,.18);padding:.45rem .8rem .5rem;text-align:center;line-height:1.25;opacity:0;transition:opacity .12s;max-width:16rem}
 #tip.on{opacity:1}
@@ -232,7 +243,7 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
       <p id="latestWhen"></p>
     </div>
   </div>
-  <div id="plate"><div id="status">Preparing the plate…</div></div>
+  <div id="plate"><div id="status"><span id="statusText">Preparing the plate…</span><span id="load" aria-hidden="true"><i></i></span></div></div>
   <p id="caption">Each bird is drawn in proportion to how often it was heard. Select one to see its plate and its hours.</p>
   <section>
     <h2>Index of species</h2>
@@ -908,6 +919,15 @@ async function makeFigure(sp, plates) {
    Arranging the plate
    =================================================================== */
 const plateEl = $("#plate"), statusEl = $("#status"), tip = $("#tip");
+const statusText = $("#statusText"), loadBar = $("#load");
+/* What the middle of the empty plate says. `at` is how far along the gathering
+   is, 0 to 1, or left out when there is nothing to wait for. */
+function setStatus(html, at) {
+  statusEl.classList.toggle("idle", !html);
+  statusText.innerHTML = html || "";
+  loadBar.hidden = at == null;
+  if (at != null) loadBar.style.setProperty("--p", Math.max(0, Math.min(1, at)));
+}
 const figures = new Map();   // sci -> { button, aspect, plate, plateKey }
 let species = [], firstReveal = true;
 
@@ -1070,15 +1090,16 @@ async function refresh(initial) {
     renderHeading();
     if (!rows.length) {
       for (const [, f] of figures) f.button.remove();
-      statusEl.innerHTML = period === "today" ? "Nothing heard yet today. The plate fills in as birds call. <button id='wk'>Look at the last seven days</button>" : "No detections in this period.";
+      setStatus(period === "today" ? "Nothing heard yet today. The plate fills in as birds call. <button id='wk'>Look at the last seven days</button>" : "No detections in this period.");
       const wk = $("#wk"); if (wk) wk.addEventListener("click", () => setPeriod("week"));
       renderIndex(); busy = false; return;
     }
     const top = opt.plate ? listed().slice(0, CONFIG.maxOnPlate) : [], missing = top.filter(s => !figures.has(s.sci));
     let done = 0;
-    if (missing.length > 3) statusEl.textContent = "Preparing the plate…";
-    await pool(top, 6, async sp => { await ensureFigure(sp); if (missing.length > 3 && !figures.get(sp.sci).button.isConnected) statusEl.textContent = "Preparing the plate… " + (++done) + " of " + missing.length; });
-    statusEl.textContent = "";
+    const waiting = missing.length > 3;
+    if (waiting) setStatus("Preparing the plate…", 0);
+    await pool(top, 6, async sp => { await ensureFigure(sp); if (waiting && !figures.get(sp.sci).button.isConnected) setStatus("Preparing the plate… " + (++done) + " of " + missing.length, done / missing.length); });
+    setStatus("");
     renderIndex(); layout(); renderLatest();
   } finally { busy = false; }
 }

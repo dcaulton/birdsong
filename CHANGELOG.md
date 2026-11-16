@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- A hairline rule under *Preparing the plate…*, filling as each plate arrives
+  and carrying a slow sheen so a long wait on a cold lookup does not look like
+  a page that has stopped. It keeps still for anyone who asks their machine for
+  less motion.
+
 - `BIRDSONG_PORT` moves the page off port 80 inside the container, for anyone
   sharing the host's network with something that already holds it. Eighty
   still, unless it is set, so nothing changes for anybody else. A value that
