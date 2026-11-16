@@ -51,6 +51,9 @@ nav button:hover{color:var(--ink)}
 #plate{position:relative;margin:.6rem clamp(.5rem,2vw,2rem) 0;height:calc(100vh - 8.5rem);min-height:420px}
 .bird{position:absolute;left:0;top:0;display:block;transition:transform .7s cubic-bezier(.2,.7,.2,1),width .7s,height .7s,opacity .9s;opacity:0}
 .bird.in{opacity:1}
+/* a small dot under whichever creature was heard last */
+.bird.newest::after{content:"";position:absolute;left:50%;top:100%;width:.45rem;height:.45rem;margin:.2rem 0 0 -.225rem;border-radius:50%;background:var(--madder)}
+body.no-mark .bird.newest::after{display:none}
 .bird.ink>img{filter:url(#paperTint)}   /* tints the cut-out by the paper colour, as the detail card does, so its pale edge melts into the page */
 .bird>canvas,.bird>img,.bird>span{display:block;width:100%;height:100%;transition:transform .25s ease-out;transform-origin:50% 60%}
 .bird:hover,.bird:focus-visible{z-index:5}
@@ -77,6 +80,8 @@ h2::before,h2::after{content:"";display:inline-block;width:3.5rem;height:1px;bac
 #index button{display:flex;align-items:baseline;width:100%;text-align:left;padding:.08rem 0;gap:.4rem}
 #index button::after{content:"";order:1;flex:1;border-bottom:1px dotted var(--rule);transform:translateY(-.25em)}
 #index .n{order:2;color:var(--madder);font-variant-numeric:oldstyle-nums}
+#index li.newest .c{color:var(--madder)}   /* and its name in the index, to match */
+body.no-mark #index li.newest .c{color:inherit}
 #index button:hover .c{text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
 #index .x{font-style:italic;color:var(--sepia);font-size:.85rem}
 
@@ -307,6 +312,7 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
       <label class="check"><input type="checkbox" data-opt="periods"> Today / seven days / thirty days / all</label>
       <label class="check"><input type="checkbox" data-opt="plate"> The collage of birds</label>
       <label class="check"><input type="checkbox" data-opt="index"> Index of species</label>
+      <label class="check"><input type="checkbox" data-opt="mark"> Mark the creature heard last</label>
       <label class="check"><input type="checkbox" id="partsOpt"> Offer skulls, wings and eggs among the plates</label>
       <label for="lim">Limit species</label>
       <input id="lim" type="number" min="0" step="1" placeholder="all of them">
@@ -459,13 +465,14 @@ const demoPlate = (params.get("demo") || "") === "2" ? 2 : 1;   // ?demo, or ?de
      ?view=plate | index | latest     ?hide=title,date,totals,periods,index     ?limit=20   */
 const PAGE_PARTS = ["title", "date", "totals", "number", "periods", "plate", "index"];
 const BIRD_PARTS = ["name", "sci", "time", "count"];   // time belongs to the latest bird, count to top and rare
-const PARTS = [...PAGE_PARTS, ...BIRD_PARTS];
+const PARTS = [...PAGE_PARTS, ...BIRD_PARTS, "mark"];   // mark: the dot on the creature heard last
 const SINGLE = { latest: "Latest bird", top: "Top", rare: "Rare" };
 const OVER = { today: "today", week: "over seven days", month: "over thirty days", all: "since records began" };
 const view = (params.get("view") || "").toLowerCase();
 const opt = {};
 for (const p of PAGE_PARTS) opt[p] = store.get("show." + p, true);
 for (const p of BIRD_PARTS) opt[p] = true;
+opt.mark = store.get("show.mark", true);
 if (view === "latest") opt.time = false;              // the time is off by default: the card is prettier without it
 opt.limit = Math.max(0, Number(params.get("limit")) || store.get("limit", 0));
 // a view shows only its own subject; show= puts any of the rest back
@@ -956,9 +963,10 @@ function layout() {
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (const p of placed) { x0 = Math.min(x0, p.cx - p.w / 2); x1 = Math.max(x1, p.cx + p.w / 2); y0 = Math.min(y0, p.cy - p.h / 2); y1 = Math.max(y1, p.cy + p.h / 2); }
   const k = Math.min(CW / (x1 - x0), CH / (y1 - y0)), ox = (CW - (x1 - x0) * k) / 2, oy = (CH - (y1 - y0) * k) / 2;
-  const onPlate = new Set();
+  const onPlate = new Set(), newest = newestSci();
   placed.forEach((p, i) => {
     const b = p.f.button; onPlate.add(b);
+    b.classList.toggle("newest", p.s.sci === newest);
     b.style.width = p.w * k + "px"; b.style.height = p.h * k + "px";
     b.style.transform = "translate(" + (ox + (p.cx - p.w / 2 - x0) * k) + "px," + (oy + (p.cy - p.h / 2 - y0) * k) + "px)";
     b.style.zIndex = p.f.blank ? "4" : String(1 + Math.round((p.cy - y0) * 3));
@@ -1014,9 +1022,19 @@ function renderHeading() {
   document.querySelectorAll("nav button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.p === period)));
 }
 
+// The creature heard most recently, by the time of its last call; nothing if
+// the station gives no times.
+function newestSci() {
+  let best = "", at = 0;
+  for (const s of species) { const t = ts(s.last); if (t > at) { at = t; best = s.sci; } }
+  return best;
+}
+
 function renderIndex() {
+  const newest = newestSci();
   $("#index").replaceChildren(...listed().map(sp => {
     const li = document.createElement("li"), b = document.createElement("button"), f = figures.get(sp.sci);
+    if (sp.sci === newest) li.className = "newest";
     b.innerHTML = '<span class="c">' + esc(sp.common) + (f && f.blank ? ' <span class="x">(no plate)</span>' : "") + '</span><span class="n">' + sp.count.toLocaleString() + "</span>";
     b.title = sp.sci; b.addEventListener("click", () => openDetail(sp)); li.append(b); return li;
   }));
@@ -1356,14 +1374,14 @@ $("#lim").addEventListener("change", e => {
 /* ---------- building one Home Assistant card ---------- */
 const CARD_VIEWS = [["", "Everything"], ["plate", "Collage"], ["index", "Index"], ["latest", "Latest"], ["top", "Top"], ["rare", "Rare"]];
 const LABEL = { title: "Title", date: "Date", totals: "Totals", number: "Plate number", periods: "Period buttons",
-  plate: "Collage", index: "Index", name: "Name", sci: "Scientific name", time: "Time", count: "Calls" };
+  plate: "Collage", index: "Index", mark: "Mark the latest", name: "Name", sci: "Scientific name", time: "Time", count: "Calls" };
 const card = { view: "", on: {}, period: "", limit: 0 };
-const cardFields = v => v === "latest" ? ["name", "sci", "time"] : SINGLE[v] ? ["name", "sci", "count"] : PAGE_PARTS;
+const cardFields = v => v === "latest" ? ["name", "sci", "time"] : SINGLE[v] ? ["name", "sci", "count"] : [...PAGE_PARTS, "mark"];
 function cardDefaults(v) {
   const on = {};
   if (SINGLE[v]) { for (const p of cardFields(v)) on[p] = true; if (v === "latest") on.time = false; }
-  else if (v) on[v] = true;
-  else for (const p of PAGE_PARTS) on[p] = true;
+  else if (v) { on[v] = true; on.mark = true; }
+  else for (const p of [...PAGE_PARTS, "mark"]) on[p] = true;
   return on;
 }
 function cardAddress() {

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- The creature heard last is marked: a small dot beneath it on the plate, in
+  the madder red of the counts, and its name in the same red in the index. It
+  can be switched off under Settings, and in a card's address with
+  `hide=mark`.
+
 - `BIRDSONG_PORT` moves the page off port 80 inside the container, for anyone
   sharing the host's network with something that already holds it. Eighty
   still, unless it is set, so nothing changes for anybody else. A value that
