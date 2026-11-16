@@ -48,7 +48,9 @@ nav button:hover{color:var(--ink)}
 #notice:empty{display:none}
 
 /* ---------- the plate ---------- */
-#plate{position:relative;margin:.6rem clamp(.5rem,2vw,2rem) 0;height:calc(100vh - 8.5rem);min-height:420px}
+/* the collage sits close under the heading and keeps a little air beneath,
+   so the caption and index do not crowd the birds' feet */
+#plate{position:relative;margin:.2rem clamp(.5rem,2vw,2rem) .55rem;height:calc(100vh - 8.5rem);min-height:420px}
 .bird{position:absolute;left:0;top:0;display:block;transition:transform .7s cubic-bezier(.2,.7,.2,1),width .7s,height .7s,opacity .9s;opacity:0}
 .bird.in{opacity:1}
 /* a small dot on whichever creature was heard last, in the middle of the figure
