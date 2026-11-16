@@ -61,10 +61,13 @@ nav button:hover{color:var(--ink)}
   box-shadow:0 0 4px var(--paper);pointer-events:none}
 /* or tucked close under the figure, for those who would rather the plate were left alone */
 body.mark-below .bird.newest::after{top:100%;transform:translate(-50%,-70%)}
-/* or nothing laid on at all: the rest of the plate stands back a tenth instead,
-   and the one heard last is the only creature at full strength */
+/* or nothing laid on at all: the rest of the plate stands back two fifths
+   instead, and the one heard last is the only creature at full strength.
+   has-newest says the plate really is showing the creature heard last: a
+   station that gives no times, or a plate that has left the latest creature
+   off, would otherwise stand every bird back and single out none. */
 body.mark-fade .bird.newest::after{display:none}
-body.mark-fade:not(.no-mark) .bird.in:not(.newest){opacity:.6}
+body.mark-fade.has-newest:not(.no-mark) .bird.in:not(.newest){opacity:.6}
 body.no-mark .bird.newest::after{display:none}
 .bird.ink>img{filter:url(#paperTint)}   /* tints the cut-out by the paper colour, as the detail card does, so its pale edge melts into the page */
 .bird>canvas,.bird>img,.bird>span{display:block;width:100%;height:100%;transition:transform .25s ease-out;transform-origin:50% 60%}
@@ -519,7 +522,10 @@ opt.limit = Math.max(0, Number(params.get("limit")) || store.get("limit", 0));
 // a view shows only its own subject; show= puts any of the rest back
 if (view === "plate" || view === "index" || SINGLE[view]) {
   for (const p of PAGE_PARTS) opt[p] = false;
-  if (view === "plate" || view === "index") opt[view] = true;
+  if (view === "plate" || view === "index") { opt[view] = true; opt.mark = true; }
+  // a card's parts come from its address, not from the settings of whichever
+  // browser shows it, so the mark starts on here as the card builder assumes
+  // and hide=mark is what turns it off
 }
 for (const [key, on] of [["hide", false], ["show", true]])
   for (const p of (params.get(key) || "").split(",")) if (PARTS.includes(p.trim())) opt[p.trim()] = on;
@@ -985,6 +991,7 @@ function layout() {
   // where the class is, and not where the list is built
   document.body.classList.toggle("fit", fit);
   sizeIndex();
+  document.body.classList.remove("has-newest");   // set below, once a drawn creature turns out to be the latest
   if (!opt.plate) { plateEl.style.height = ""; return; }
   fitPlate();
   const CW = plateEl.clientWidth, CH = plateEl.clientHeight;
@@ -1018,6 +1025,8 @@ function layout() {
   for (const p of placed) { x0 = Math.min(x0, p.cx - p.w / 2); x1 = Math.max(x1, p.cx + p.w / 2); y0 = Math.min(y0, p.cy - p.h / 2); y1 = Math.max(y1, p.cy + p.h / 2); }
   const k = Math.min(CW / (x1 - x0), CH / (y1 - y0)), ox = (CW - (x1 - x0) * k) / 2, oy = (CH - (y1 - y0) * k) / 2;
   const onPlate = new Set(), newest = newestSci();
+  // only a plate that actually draws the latest creature may stand the rest back
+  if (newest) document.body.classList.toggle("has-newest", placed.some(p => p.s.sci === newest));
   placed.forEach((p, i) => {
     const b = p.f.button; onPlate.add(b);
     b.classList.toggle("newest", p.s.sci === newest);
@@ -1135,7 +1144,9 @@ async function refresh(initial) {
         + "<button id='fix'>Open station settings</button>";
       $("#fix").addEventListener("click", () => openSettings());
     }
-    const sig = period + "|" + rows.map(s => s.sci + ":" + s.count).join(",");
+    // the last-heard time counts as a change: the dot, the index's red name and
+    // sizing by time all read it, so a plate can need redrawing on a stamp alone
+    const sig = period + "|" + rows.map(s => s.sci + ":" + s.count + ":" + s.last).join(",");
     species = rows;
     if (sig === lastSig) { busy = false; return; }
     lastSig = sig;
@@ -1152,7 +1163,26 @@ async function refresh(initial) {
     await pool(top, 6, async sp => { await ensureFigure(sp); if (missing.length > 3 && !figures.get(sp.sci).button.isConnected) statusEl.textContent = "Preparing the plate… " + (++done) + " of " + missing.length; });
     statusEl.textContent = "";
     renderIndex(); layout(); renderLatest();
-  } finally { busy = false; }
+  } finally { busy = false; drainRedraw(); }
+}
+
+/* A change of what decides a creature's size needs no new detections, only the
+   figures for whichever creatures the plate now wants. Asking the station again
+   would risk a hiccup putting the page into its sample plate for good, so this
+   draws from the rows already in hand. A change made while the plate is busy
+   waits for it rather than being dropped. */
+let redrawWanted = false;
+async function redrawPlate() {
+  if (busy) { redrawWanted = true; return; }
+  busy = true;
+  try {
+    if (species.length) await pool(opt.plate ? plateList() : [], 6, sp => ensureFigure(sp));
+    renderIndex(); layout(); renderLatest();
+  } finally { busy = false; drainRedraw(); }
+}
+function drainRedraw() {
+  if (!redrawWanted) return;
+  redrawWanted = false; redrawPlate();
 }
 
 function setPeriod(p) {
@@ -1424,8 +1454,7 @@ document.querySelectorAll("#showOpts [data-opt]").forEach(b => b.addEventListene
 }));
 $("#sizeBy").addEventListener("change", e => {
   opt.sizeBy = sizeKind(e.target.value); store.set("sizeBy", opt.sizeBy);
-  lastSig = "";         // the figures have not changed, but which are drawn has
-  refresh(true);
+  redrawPlate();        // the detections have not changed, only which are drawn
 });
 $("#markAt").addEventListener("change", e => {
   opt.markAt = markPlace(e.target.value); store.set("markAt", opt.markAt); applyOptions();
