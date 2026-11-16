@@ -7,8 +7,11 @@
   it for a quarter of a minute before anything appeared. The sample plate now
   goes up after two seconds, with a line saying the station is being waited on
   and a way into Settings; the asking continues underneath, and a station that
-  answers late takes the plate back. Questions are given twelve seconds while
-  there is nothing on the page, thirty once there is.
+  answers late takes the plate back. A question is held open three quarters of
+  a minute before it is given up on, so a station that takes its time over a
+  wide period is never mistaken for one that is not there.
+- Changing the period says *Asking the station…* in the empty plate, rather than
+  showing nothing while the birds of the period just left fade away.
 - Fixed: a station that was unreachable when the page opened stayed unreachable
   for as long as the page was open. The sample plate shown in its place stopped
   the page ever asking again, so a station that came back a minute later went

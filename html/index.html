@@ -1086,6 +1086,11 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
    blank page. So the sample plate goes up after PATIENCE, and the asking goes
    on underneath; whichever the station does next, answer or fail, lands on top. */
 const PATIENCE = 2000;
+/* And when to stop holding the question open at all. Generous on purpose: the
+   sample plate is already up, so nothing is waiting on this, and a station that
+   takes its time over a wide period must not be mistaken for one that is not
+   there. Under the minute between asks, so the questions cannot pile up. */
+const ASK_LIMIT = 45000;
 
 function noStation(e) {
   const msg = !SOURCE.set ? "No station yet."
@@ -1104,7 +1109,7 @@ async function refresh(initial) {
   try {
     let rows;
     try {
-      const ask = fetchSpecies(species.length && !demo ? 30000 : 12000);
+      const ask = fetchSpecies(ASK_LIMIT);
       if (!species.length && !forcedDemo) {
         const answered = await Promise.race([ask.then(r => ({ r })), wait(PATIENCE)]);
         if (!answered) {   // nothing yet: something to look at, and the asking continues
@@ -1154,6 +1159,9 @@ async function draw(rows) {
 function setPeriod(p) {
   period = p; if (!urlPeriod) store.set("period", p); lastSig = "";
   for (const [, f] of figures) { f.button.classList.remove("in"); }
+  // the birds of the period just left have been faded out, so say what is
+  // happening in the space they leave rather than showing an empty plate
+  setStatus("Asking the station…", 0);
   renderHeading(); refresh(true);
 }
 document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => setPeriod(b.dataset.p)));
