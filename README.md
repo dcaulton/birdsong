@@ -50,8 +50,8 @@ including a little owl heard in the small hours.
   - the latest recordings, with the weather at the time, playback and a
     spectrogram
   - other illustrations of the species to choose from
-- **The creature heard last** is marked: a small red dot beneath it on the
-  plate, and its name in red in the index. Switch it off under Settings.
+- **The creature heard last** is marked: a small red *o* in the middle of it on
+  the plate, and its name in red in the index. Switch it off under Settings.
 - **One-screen mode** (on by default): the plate shrinks so the index
   fits beneath it without scrolling. Switch it off under Settings.
 
@@ -252,7 +252,7 @@ on the view:
 | `periods` | today / seven days / thirty days / all | page, collage, index |
 | `plate` | the collage of birds | page, collage, index |
 | `index` | the index of species | page, collage, index |
-| `mark` | the dot under the creature heard last, and its name in red in the index | page, collage, index |
+| `mark` | the red *o* on the creature heard last, and its name in red in the index; `mark=below` puts the *o* under the creature instead of over its centre | page, collage, index |
 | `name` | the bird's common name | the one-bird views |
 | `sci` | the bird's scientific name | the one-bird views |
 | `time` | when it was heard, *1:59 PM* — **off unless asked for** | `latest` |

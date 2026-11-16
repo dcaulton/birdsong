@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-- The creature heard last is marked: a small dot beneath it on the plate, in
-  the madder red of the counts, and its name in the same red in the index. It
+- The creature heard last is marked: a small *o* in the middle of it on the plate,
+  in the madder red of the counts, and its name in the same red in the index. It
   can be switched off under Settings, and in a card's address with
   `hide=mark`.
 

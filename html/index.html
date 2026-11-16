@@ -51,8 +51,12 @@ nav button:hover{color:var(--ink)}
 #plate{position:relative;margin:.6rem clamp(.5rem,2vw,2rem) 0;height:calc(100vh - 8.5rem);min-height:420px}
 .bird{position:absolute;left:0;top:0;display:block;transition:transform .7s cubic-bezier(.2,.7,.2,1),width .7s,height .7s,opacity .9s;opacity:0}
 .bird.in{opacity:1}
-/* a small dot under whichever creature was heard last */
-.bird.newest::after{content:"";position:absolute;left:50%;top:100%;width:.45rem;height:.45rem;margin:.2rem 0 0 -.225rem;border-radius:50%;background:var(--madder)}
+/* a small "o" on whichever creature was heard last: set in the page's own
+   type, and in the middle of the figure so it cannot be taken for a
+   neighbour's. The paper-coloured halo keeps it legible over dark plumage. */
+.bird.newest::after{content:"o";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--serif);font-size:1.25rem;line-height:1;color:var(--madder);text-shadow:0 0 3px var(--paper),0 0 3px var(--paper),0 0 6px var(--paper);pointer-events:none}
+/* or tucked close under the figure, for those who would rather the plate were left alone */
+body.mark-below .bird.newest::after{top:100%;transform:translate(-50%,-.38em)}
 body.no-mark .bird.newest::after{display:none}
 .bird.ink>img{filter:url(#paperTint)}   /* tints the cut-out by the paper colour, as the detail card does, so its pale edge melts into the page */
 .bird>canvas,.bird>img,.bird>span{display:block;width:100%;height:100%;transition:transform .25s ease-out;transform-origin:50% 60%}
@@ -127,6 +131,7 @@ body.latest header,body.latest footer{display:none}
 #settings #cardPeriod,#settings #cardLimit{width:auto;padding:.25rem .4rem;font:inherit;border:1px solid var(--sepia);background:#f6efdc;color:var(--ink)}
 #settings #cardLimit{width:4.5rem}
 #settings #cardPeriod{max-width:10rem}
+#settings #markAt{display:inline-block;width:auto;font:inherit;font-size:.9rem;padding:.05rem .2rem;margin-left:.2rem}
 #settings #cardUrl{flex:1;min-width:11rem}
 #copyUrl{margin:0;white-space:nowrap}
 /* the preview is laid out as a card of 500x300 and scaled down to fit the box,
@@ -312,7 +317,8 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
       <label class="check"><input type="checkbox" data-opt="periods"> Today / seven days / thirty days / all</label>
       <label class="check"><input type="checkbox" data-opt="plate"> The collage of birds</label>
       <label class="check"><input type="checkbox" data-opt="index"> Index of species</label>
-      <label class="check"><input type="checkbox" data-opt="mark"> Mark the creature heard last</label>
+      <label class="check"><input type="checkbox" data-opt="mark"> Mark the creature heard last, with an o
+        <select id="markAt" aria-label="Where the mark sits"><option value="centre">over its centre</option><option value="below">below it</option></select></label>
       <label class="check"><input type="checkbox" id="partsOpt"> Offer skulls, wings and eggs among the plates</label>
       <label for="lim">Limit species</label>
       <input id="lim" type="number" min="0" step="1" placeholder="all of them">
@@ -465,7 +471,7 @@ const demoPlate = (params.get("demo") || "") === "2" ? 2 : 1;   // ?demo, or ?de
      ?view=plate | index | latest     ?hide=title,date,totals,periods,index     ?limit=20   */
 const PAGE_PARTS = ["title", "date", "totals", "number", "periods", "plate", "index"];
 const BIRD_PARTS = ["name", "sci", "time", "count"];   // time belongs to the latest bird, count to top and rare
-const PARTS = [...PAGE_PARTS, ...BIRD_PARTS, "mark"];   // mark: the dot on the creature heard last
+const PARTS = [...PAGE_PARTS, ...BIRD_PARTS, "mark"];   // mark: the "o" on the creature heard last
 const SINGLE = { latest: "Latest bird", top: "Top", rare: "Rare" };
 const OVER = { today: "today", week: "over seven days", month: "over thirty days", all: "since records began" };
 const view = (params.get("view") || "").toLowerCase();
@@ -473,6 +479,9 @@ const opt = {};
 for (const p of PAGE_PARTS) opt[p] = store.get("show." + p, true);
 for (const p of BIRD_PARTS) opt[p] = true;
 opt.mark = store.get("show.mark", true);
+// where the mark sits: over the creature's centre, or just below it (&mark=below)
+const markPlace = v => /^below$/i.test(String(v || "")) ? "below" : "centre";
+opt.markAt = markPlace(params.get("mark") || store.get("markAt", "centre"));
 if (view === "latest") opt.time = false;              // the time is off by default: the card is prettier without it
 opt.limit = Math.max(0, Number(params.get("limit")) || store.get("limit", 0));
 // a view shows only its own subject; show= puts any of the rest back
@@ -485,6 +494,7 @@ for (const [key, on] of [["hide", false], ["show", true]])
 
 function applyOptions() {
   for (const p of PARTS) document.body.classList.toggle("no-" + p, !opt[p]);
+  document.body.classList.toggle("mark-below", opt.markAt === "below");
   document.body.classList.toggle("latest", !!SINGLE[view]);
   document.body.classList.toggle("card", !!view);   // a page being used as a card keeps no way into settings
   $("#latest").hidden = !SINGLE[view];
@@ -1357,7 +1367,8 @@ function openSettings() {
   card.view = ""; card.on = cardDefaults(""); card.period = ""; card.limit = 0;
   $("#cardPeriod").value = ""; $("#cardLimit").value = ""; cardBuild();
   $("#srv").value = store.get("server", "") || CONFIG.server; $("#stn").value = store.get("station", "");
-  $("#fitOpt").checked = fit; $("#partsOpt").checked = store.get("parts", false); settings.showModal();
+  $("#fitOpt").checked = fit; $("#partsOpt").checked = store.get("parts", false);
+  $("#markAt").value = opt.markAt; settings.showModal();
 }
 $("#fitOpt").addEventListener("change", e => { fit = e.target.checked; store.set("fit", fit); layout(); });
 $("#partsOpt").addEventListener("change", e => {
@@ -1367,6 +1378,9 @@ document.querySelectorAll("#showOpts [data-opt]").forEach(b => b.addEventListene
   const p = b.dataset.opt; opt[p] = e.target.checked; store.set("show." + p, opt[p]);
   applyOptions(); renderHeading(); renderIndex(); refresh(true);
 }));
+$("#markAt").addEventListener("change", e => {
+  opt.markAt = markPlace(e.target.value); store.set("markAt", opt.markAt); applyOptions();
+});
 $("#lim").addEventListener("change", e => {
   opt.limit = Math.max(0, Number(e.target.value) || 0); store.set("limit", opt.limit);
   renderHeading(); renderIndex(); refresh(true);
