@@ -205,6 +205,9 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
 #settings summary:hover{color:var(--madder)}
 #settings details>:nth-child(2){margin-top:.2rem}
 #settings .credits{margin:0;font-size:.85rem;line-height:1.45}
+#settings blockquote{margin:0 0 .6rem;font-style:italic;color:var(--sepia);font-size:.9rem;line-height:1.5;
+  border-left:1px solid var(--rule);padding-left:.7rem}
+#settings blockquote cite{display:block;font-style:normal;font-size:.8rem;margin-top:.25rem}
 #settings h3{font-weight:400;font-size:1.4rem;margin:0 0 .6rem}
 #settings label{display:block;font-style:italic;color:var(--sepia);margin-bottom:.25rem}
 #settings input{font:inherit;width:100%;padding:.4rem .6rem;border:1px solid var(--sepia);background:#f6efdc;color:var(--ink)}
@@ -361,6 +364,13 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
     <details id="creditsBox">
       <summary>Credits</summary>
       <p class="credits">Birdsong v0.42. Created by <a href="https://ed-stone.co.uk" target="_blank" rel="noopener">Ed Stone</a>. Detections by <span id="srcName">BirdNET-Go</span>. Bird cut-outs from the <a href="https://github.com/arnegiacomo/fugleramme">Fugleramme</a> project by Arne Giacomo, after Gould, the von Wright brothers, Audubon and others, used under CC BY-SA 4.0. Descriptions from Wikipedia, CC BY-SA. Further plates from <i>Nederlandsche Vogelen</i> (Nozeman &amp; Sepp, Amsterdam, 1770–1829), digitised by the Koninklijke Bibliotheek, with others from public-domain works held on Wikimedia Commons.</p>
+    </details>
+
+    <details id="supportBox">
+      <summary>Support</summary>
+      <blockquote>Beautiful things, &ldquo;singing out brilliantly from the wreck of time&rdquo; &mdash; passed hand to hand to the next generation of lovers.
+        <cite>after Donna Tartt, <i>The Goldfinch</i></cite></blockquote>
+      <p class="credits">One hopes you are enjoying Birdsong. If something is amiss, or it does not yet do what you want of it, say so on <a href="https://github.com/dopeytree/birdsong/issues" target="_blank" rel="noopener">GitHub</a>.</p>
     </details>
   </form>
 </dialog>

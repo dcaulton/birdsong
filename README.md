@@ -372,6 +372,7 @@ time so the panel stays on the screen:
   `hide=` and `show=`.
 - **Home Assistant card** — the card builder above.
 - **Credits** — the artwork, the typeface and the sources.
+- **Support** — where to raise anything amiss, or anything missing.
 
 All of this, the last period chosen, and any illustration you pick for a
 bird are remembered per browser, not shared between devices. A card
