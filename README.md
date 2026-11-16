@@ -50,6 +50,17 @@ including a little owl heard in the small hours.
   - the latest recordings, with the weather at the time, playback and a
     spectrogram
   - other illustrations of the species to choose from
+- **What decides a creature's size** is set under Settings, three ways:
+  *Nosiest species*, the busiest the largest, which is how it arrives;
+  *Recent ramblings*, the latest largest and the oldest smallest, which also
+  puts the latest creatures on the plate rather than the busiest, so the one
+  just heard is certain to be there; or *No pecking order*, every creature
+  the same size. The index keeps its own order whichever is chosen.
+- **The creature heard last** is marked, and its name turns red in the index.
+  Three ways, under Settings: a small madder dot over the middle of it, the
+  same dot below it, or no dot at all and the rest of the plate standing back
+  two fifths, leaving the one just heard the only creature at full strength.
+  The whole mark can be switched off.
 - **One-screen mode** (on by default): the plate shrinks so the index
   fits beneath it without scrolling. Switch it off under Settings.
 
@@ -250,6 +261,7 @@ on the view:
 | `periods` | today / seven days / thirty days / all | page, collage, index |
 | `plate` | the collage of birds | page, collage, index |
 | `index` | the index of species | page, collage, index |
+| `mark` | how the creature heard last is marked, and its name in red in the index; `mark=below` puts the dot under it instead of over its centre, `mark=fade` drops the dot and stands the rest of the plate back two fifths instead | page, collage, index |
 | `name` | the bird's common name | the one-bird views |
 | `sci` | the bird's scientific name | the one-bird views |
 | `time` | when it was heard, *1:59 PM* — **off unless asked for** | `latest` |
@@ -265,9 +277,11 @@ puts the date and the period buttons back above it. Going the other way,
 |---|---|
 | `period=today` `week` `month` `all` | fixes the period for that card, whatever the page is set to |
 | `limit=20` | shows only the twenty most-heard species |
+| `size=calls` `time` `equal` | what decides a creature's size on the collage: how often it called, how lately it called, or nothing at all — no pecking order, every creature the same size |
 
 `limit` is worth setting on an index card, which otherwise scrolls, and on
-a collage card to keep the birds large.
+a collage card to keep the birds large. `size=equal` suits a plate of a
+handful of species, where one loud bird would otherwise dwarf the rest.
 
 ### Examples
 
@@ -285,6 +299,10 @@ a collage card to keep the birds large.
 
     /?view=plate&show=periods&limit=24&period=month
     a month's collage of 24 birds, with the period buttons
+
+    /?view=plate&period=today&limit=8&size=equal&mark=fade
+    today's eight birds all of a size, the one just heard the only one
+    at full strength
 
     /?hide=title,number,totals
     the whole page, trimmed of its heading furniture
@@ -354,13 +372,17 @@ time so the panel stays on the screen:
   an optional BirdWeather station, which takes precedence over both
   BirdNET-Go and the container's station; *Save and reload*; and *Show
   the sample plate*, the same sample as `/?demo`.
-- **Show** — one-screen mode, then a switch for each part of the page:
-  title, date, species and call totals, plate number, period buttons,
-  the collage and the index, with *Limit species* to cap how many birds
-  are drawn. These are the same parts a card address names with `hide=`
-  and `show=`.
+- **Show** — one-screen mode and a switch for each part of the page:
+  title, date, species and call totals, plate number, period buttons, the
+  index and the collage. Beneath the collage sit what decides a
+  creature's size — its calls, how lately it called, or nothing at all —
+  and how the one heard last is marked, then whether the
+  parts plates are offered, and last *Limit species*, to cap how many
+  birds are drawn. These are the same parts a card address names with
+  `hide=` and `show=`.
 - **Home Assistant card** — the card builder above.
 - **Credits** — the artwork, the typeface and the sources.
+- **Support** — where to raise anything amiss, or anything missing.
 
 All of this, the last period chosen, and any illustration you pick for a
 bird are remembered per browser, not shared between devices. A card
