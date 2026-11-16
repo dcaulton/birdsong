@@ -360,10 +360,11 @@ time so the panel stays on the screen:
   an optional BirdWeather station, which takes precedence over both
   BirdNET-Go and the container's station; *Save and reload*; and *Show
   the sample plate*, the same sample as `/?demo`.
-- **Show** — one-screen mode, then a switch for each part of the page:
-  title, date, species and call totals, plate number, period buttons,
-  the collage and the index, with *Limit species* to cap how many birds
-  are drawn. These are the same parts a card address names with `hide=`
+- **Show** — *Limit species*, to cap how many birds are drawn, then
+  one-screen mode and a switch for each part of the page: title, date,
+  species and call totals, plate number, period buttons, the index and
+  the collage. Beneath the collage sit what decides a creature's size and
+  how the one heard last is marked. These are the same parts a card address names with `hide=`
   and `show=`.
 - **Home Assistant card** — the card builder above.
 - **Credits** — the artwork, the typeface and the sources.
