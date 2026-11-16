@@ -16,12 +16,6 @@
   --sepia:#6b5338;
   --rule:#bcab86;
   --madder:#8c3b2a;
-  /* A line round a cut-out: eight hard copies of it, one to each side and
-     corner, showing past its edge. Four alone leave the corners thin. */
-  --outline:drop-shadow(1.5px 0 0 var(--madder)) drop-shadow(-1.5px 0 0 var(--madder))
-            drop-shadow(0 1.5px 0 var(--madder)) drop-shadow(0 -1.5px 0 var(--madder))
-            drop-shadow(1px 1px 0 var(--madder)) drop-shadow(-1px -1px 0 var(--madder))
-            drop-shadow(1px -1px 0 var(--madder)) drop-shadow(-1px 1px 0 var(--madder));
   --serif:"IM Fell English","Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
   --caps:"IM Fell English SC","IM Fell English","Iowan Old Style",Palatino,Georgia,serif;
 }
@@ -65,12 +59,10 @@ nav button:hover{color:var(--ink)}
   box-shadow:0 0 4px var(--paper);pointer-events:none}
 /* or tucked close under the figure, for those who would rather the plate were left alone */
 body.mark-below .bird.newest::after{top:100%;transform:translate(-50%,-70%)}
-/* or no dot at all, and a line drawn round the creature instead. It follows the
-   cut-out's own edge, where a border would box it in. The tint has to be named
-   again here: a filter replaces, it does not add. */
-body.mark-outline .bird.newest::after{display:none}
-body.mark-outline .bird.newest>*{filter:var(--outline)}
-body.mark-outline .bird.newest.ink>img{filter:url(#paperTint) var(--outline)}
+/* or nothing laid on at all: the rest of the plate stands back a tenth instead,
+   and the one heard last is the only creature at full strength */
+body.mark-fade .bird.newest::after{display:none}
+body.mark-fade:not(.no-mark) .bird.in:not(.newest){opacity:.9}
 body.no-mark .bird.newest::after{display:none}
 .bird.ink>img{filter:url(#paperTint)}   /* tints the cut-out by the paper colour, as the detail card does, so its pale edge melts into the page */
 .bird>canvas,.bird>img,.bird>span{display:block;width:100%;height:100%;transition:transform .25s ease-out;transform-origin:50% 60%}
@@ -332,7 +324,7 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
       <label class="check"><input type="checkbox" data-opt="plate"> The collage of birds</label>
       <label class="check"><input type="checkbox" data-opt="index"> Index of species</label>
       <label class="check"><input type="checkbox" data-opt="mark"> Mark the creature heard last
-        <select id="markAt" aria-label="How it is marked"><option value="centre">a dot over its centre</option><option value="below">a dot below it</option><option value="outline">a line around it</option></select></label>
+        <select id="markAt" aria-label="How it is marked"><option value="centre">a dot over its centre</option><option value="below">a dot below it</option><option value="fade">the rest of them faded</option></select></label>
       <label class="check"><input type="checkbox" id="partsOpt"> Offer skulls, wings and eggs among the plates</label>
       <label for="lim">Limit species</label>
       <input id="lim" type="number" min="0" step="1" placeholder="all of them">
@@ -494,9 +486,9 @@ for (const p of PAGE_PARTS) opt[p] = store.get("show." + p, true);
 for (const p of BIRD_PARTS) opt[p] = true;
 opt.mark = store.get("show.mark", true);
 // where the mark sits: over the creature's centre, or just below it (&mark=below)
-const MARK_AT = ["centre", "below", "outline"];
+const MARK_AT = ["centre", "below", "fade"];
 const markPlace = v => {
-  const t = String(v || "").toLowerCase().replace("center", "centre").replace("glow", "outline");
+  const t = String(v || "").toLowerCase().replace("center", "centre");
   return MARK_AT.includes(t) ? t : "centre";
 };
 opt.markAt = markPlace(params.get("mark") || store.get("markAt", "centre"));
@@ -513,7 +505,7 @@ for (const [key, on] of [["hide", false], ["show", true]])
 function applyOptions() {
   for (const p of PARTS) document.body.classList.toggle("no-" + p, !opt[p]);
   document.body.classList.toggle("mark-below", opt.markAt === "below");
-  document.body.classList.toggle("mark-outline", opt.markAt === "outline");
+  document.body.classList.toggle("mark-fade", opt.markAt === "fade");
   document.body.classList.toggle("latest", !!SINGLE[view]);
   document.body.classList.toggle("card", !!view);   // a page being used as a card keeps no way into settings
   $("#latest").hidden = !SINGLE[view];

@@ -252,7 +252,7 @@ on the view:
 | `periods` | today / seven days / thirty days / all | page, collage, index |
 | `plate` | the collage of birds | page, collage, index |
 | `index` | the index of species | page, collage, index |
-| `mark` | how the creature heard last is marked, and its name in red in the index; `mark=below` puts the dot under it instead of over its centre, `mark=outline` draws a line round the creature instead | page, collage, index |
+| `mark` | how the creature heard last is marked, and its name in red in the index; `mark=below` puts the dot under it instead of over its centre, `mark=fade` drops the dot and stands the rest of the plate back a tenth instead | page, collage, index |
 | `name` | the bird's common name | the one-bird views |
 | `sci` | the bird's scientific name | the one-bird views |
 | `time` | when it was heard, *1:59 PM* — **off unless asked for** | `latest` |
