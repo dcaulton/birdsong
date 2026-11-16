@@ -48,9 +48,27 @@ nav button:hover{color:var(--ink)}
 #notice:empty{display:none}
 
 /* ---------- the plate ---------- */
-#plate{position:relative;margin:.6rem clamp(.5rem,2vw,2rem) 0;height:calc(100vh - 8.5rem);min-height:420px}
+/* the collage sits close under the heading and keeps a little air beneath,
+   so the caption and index do not crowd the birds' feet */
+#plate{position:relative;margin:.2rem clamp(.5rem,2vw,2rem) .55rem;height:calc(100vh - 8.5rem);min-height:420px}
 .bird{position:absolute;left:0;top:0;display:block;transition:transform .7s cubic-bezier(.2,.7,.2,1),width .7s,height .7s,opacity .9s;opacity:0}
 .bird.in{opacity:1}
+/* a small dot on whichever creature was heard last, in the middle of the figure
+   so it cannot be taken for a neighbour's. A breath of paper around it keeps it
+   from sinking into dark plumage. */
+.bird.newest::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:.5rem;height:.5rem;border-radius:50%;background:var(--madder);opacity:.9;
+  box-shadow:0 0 4px var(--paper);pointer-events:none}
+/* or tucked close under the figure, for those who would rather the plate were left alone */
+body.mark-below .bird.newest::after{top:100%;transform:translate(-50%,-70%)}
+/* or nothing laid on at all: the rest of the plate stands back two fifths
+   instead, and the one heard last is the only creature at full strength.
+   has-newest says the plate really is showing the creature heard last: a
+   station that gives no times, or a plate that has left the latest creature
+   off, would otherwise stand every bird back and single out none. */
+body.mark-fade .bird.newest::after{display:none}
+body.mark-fade.has-newest:not(.no-mark) .bird.in:not(.newest){opacity:.6}
+body.no-mark .bird.newest::after{display:none}
 .bird.ink>img{filter:url(#paperTint)}   /* tints the cut-out by the paper colour, as the detail card does, so its pale edge melts into the page */
 .bird>canvas,.bird>img,.bird>span{display:block;width:100%;height:100%;transition:transform .25s ease-out;transform-origin:50% 60%}
 .bird:hover,.bird:focus-visible{z-index:5}
@@ -88,6 +106,8 @@ h2::before,h2::after{content:"";display:inline-block;width:3.5rem;height:1px;bac
 #index button{display:flex;align-items:baseline;width:100%;text-align:left;padding:.08rem 0;gap:.4rem}
 #index button::after{content:"";order:1;flex:1;border-bottom:1px dotted var(--rule);transform:translateY(-.25em)}
 #index .n{order:2;color:var(--madder);font-variant-numeric:oldstyle-nums}
+#index li.newest .c{color:var(--madder)}   /* and its name in the index, to match */
+body.no-mark #index li.newest .c{color:inherit}
 #index button:hover .c{text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:3px}
 #index .x{font-style:italic;color:var(--sepia);font-size:.85rem}
 
@@ -133,6 +153,7 @@ body.latest header,body.latest footer{display:none}
 #settings #cardPeriod,#settings #cardLimit{width:auto;padding:.25rem .4rem;font:inherit;border:1px solid var(--sepia);background:#f6efdc;color:var(--ink)}
 #settings #cardLimit{width:4.5rem}
 #settings #cardPeriod{max-width:10rem}
+#settings #markAt,#settings #sizeBy{display:inline-block;width:auto;font:inherit;font-size:.9rem;padding:.05rem .2rem;margin-left:.2rem}
 #settings #cardUrl{flex:1;min-width:11rem}
 #copyUrl{margin:0;white-space:nowrap}
 /* the preview is laid out as a card of 500x300 and scaled down to fit the box,
@@ -198,6 +219,9 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
 #settings summary:hover{color:var(--madder)}
 #settings details>:nth-child(2){margin-top:.2rem}
 #settings .credits{margin:0;font-size:.85rem;line-height:1.45}
+#settings blockquote{margin:0 0 .6rem;font-style:italic;color:var(--sepia);font-size:.9rem;line-height:1.5;
+  border-left:1px solid var(--rule);padding-left:.7rem}
+#settings blockquote cite{display:block;font-style:normal;font-size:.8rem;margin-top:.25rem}
 #settings h3{font-weight:400;font-size:1.4rem;margin:0 0 .6rem}
 #settings label{display:block;font-style:italic;color:var(--sepia);margin-bottom:.25rem}
 #settings input{font:inherit;width:100%;padding:.4rem .6rem;border:1px solid var(--sepia);background:#f6efdc;color:var(--ink)}
@@ -316,8 +340,12 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
       <label class="check"><input type="checkbox" data-opt="totals"> Species and call totals</label>
       <label class="check"><input type="checkbox" data-opt="number"> Plate number</label>
       <label class="check"><input type="checkbox" data-opt="periods"> Today / seven days / thirty days / all</label>
-      <label class="check"><input type="checkbox" data-opt="plate"> The collage of birds</label>
       <label class="check"><input type="checkbox" data-opt="index"> Index of species</label>
+      <label class="check"><input type="checkbox" data-opt="plate"> The collage of birds</label>
+      <label class="check">Size the collage by
+        <select id="sizeBy" aria-label="What decides a creature's size"><option value="calls">Nosiest species</option><option value="time">Recent ramblings</option><option value="equal">No pecking order</option></select></label>
+      <label class="check"><input type="checkbox" data-opt="mark"> Mark the beast
+        <select id="markAt" aria-label="How it is marked"><option value="centre">a dot over its centre</option><option value="below">a dot below it</option><option value="fade">the rest of them faded</option></select></label>
       <label class="check"><input type="checkbox" id="partsOpt"> Offer skulls, wings and eggs among the plates</label>
       <label for="lim">Limit species</label>
       <input id="lim" type="number" min="0" step="1" placeholder="all of them">
@@ -350,6 +378,13 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
     <details id="creditsBox">
       <summary>Credits</summary>
       <p class="credits">Birdsong v0.42. Created by <a href="https://ed-stone.co.uk" target="_blank" rel="noopener">Ed Stone</a>. Detections by <span id="srcName">BirdNET-Go</span>. Bird cut-outs from the <a href="https://github.com/arnegiacomo/fugleramme">Fugleramme</a> project by Arne Giacomo, after Gould, the von Wright brothers, Audubon and others, used under CC BY-SA 4.0. Descriptions from Wikipedia, CC BY-SA. Further plates from <i>Nederlandsche Vogelen</i> (Nozeman &amp; Sepp, Amsterdam, 1770–1829), digitised by the Koninklijke Bibliotheek, with others from public-domain works held on Wikimedia Commons.</p>
+    </details>
+
+    <details id="supportBox">
+      <summary>Support</summary>
+      <blockquote>Beautiful things, &ldquo;singing out brilliantly from the wreck of time&rdquo; &mdash; passed hand to hand to the next generation of lovers.
+        <cite>after Donna Tartt, <i>The Goldfinch</i></cite></blockquote>
+      <p class="credits">One hopes you are enjoying Birdsong. If something is amiss, or it does not yet do what you want of it, say so on <a href="https://github.com/dopeytree/birdsong/issues" target="_blank" rel="noopener">GitHub</a>.</p>
     </details>
   </form>
 </dialog>
@@ -481,31 +516,58 @@ const demoPlate = (params.get("demo") || "") === "2" ? 2 : 1;   // ?demo, or ?de
      ?view=plate | index | latest     ?hide=title,date,totals,periods,index     ?limit=20   */
 const PAGE_PARTS = ["title", "date", "totals", "number", "periods", "plate", "index"];
 const BIRD_PARTS = ["name", "sci", "time", "count"];   // time belongs to the latest bird, count to top and rare
-const PARTS = [...PAGE_PARTS, ...BIRD_PARTS];
+const PARTS = [...PAGE_PARTS, ...BIRD_PARTS, "mark"];   // mark: the dot on the creature heard last
 const SINGLE = { latest: "Latest bird", top: "Top", rare: "Rare" };
 const OVER = { today: "today", week: "over seven days", month: "over thirty days", all: "since records began" };
 const view = (params.get("view") || "").toLowerCase();
 const opt = {};
 for (const p of PAGE_PARTS) opt[p] = store.get("show." + p, true);
 for (const p of BIRD_PARTS) opt[p] = true;
+opt.mark = store.get("show.mark", true);
+// where the mark sits: over the creature's centre, or just below it (&mark=below)
+const MARK_AT = ["centre", "below", "fade"];
+const markPlace = v => {
+  const t = String(v || "").toLowerCase().replace("center", "centre");
+  return MARK_AT.includes(t) ? t : "centre";
+};
+opt.markAt = markPlace(params.get("mark") || store.get("markAt", "centre"));
+// what decides a creature's size on the plate: how often it called, how
+// lately (&size=time), or nothing at all (&size=equal)
+const SIZE_BY = ["calls", "time", "equal"];
+const sizeKind = v => {
+  const t = String(v || "").toLowerCase();
+  return SIZE_BY.includes(t) ? t : "calls";
+};
+opt.sizeBy = sizeKind(params.get("size") || store.get("sizeBy", "calls"));
 if (view === "latest") opt.time = false;              // the time is off by default: the card is prettier without it
 opt.limit = Math.max(0, Number(params.get("limit")) || store.get("limit", 0));
 // a view shows only its own subject; show= puts any of the rest back
 if (view === "plate" || view === "index" || SINGLE[view]) {
   for (const p of PAGE_PARTS) opt[p] = false;
-  if (view === "plate" || view === "index") opt[view] = true;
+  if (view === "plate" || view === "index") { opt[view] = true; opt.mark = true; }
+  // a card's parts come from its address, not from the settings of whichever
+  // browser shows it, so the mark starts on here as the card builder assumes
+  // and hide=mark is what turns it off
 }
 for (const [key, on] of [["hide", false], ["show", true]])
   for (const p of (params.get(key) || "").split(",")) if (PARTS.includes(p.trim())) opt[p.trim()] = on;
 
 function applyOptions() {
   for (const p of PARTS) document.body.classList.toggle("no-" + p, !opt[p]);
+  document.body.classList.toggle("mark-below", opt.markAt === "below");
+  document.body.classList.toggle("mark-fade", opt.markAt === "fade");
   document.body.classList.toggle("latest", !!SINGLE[view]);
   document.body.classList.toggle("card", !!view);   // a page being used as a card keeps no way into settings
   $("#latest").hidden = !SINGLE[view];
   sizeIndex();   // one-screen mode uses narrower columns
 }
 const listed = () => opt.limit ? species.slice(0, opt.limit) : species;
+/* The creatures the plate draws. Sized by calls it takes the busiest; sized by
+   time, the latest -- otherwise the one heard a minute ago might not be on the
+   plate at all. The index keeps its own order either way. */
+const plateList = () => (opt.sizeBy === "time"
+  ? [...listed()].sort((a, b) => ts(b.last) - ts(a.last))
+  : listed()).slice(0, CONFIG.maxOnPlate);
 const ts = v => { const d = new Date(String(v || "").replace(" ", "T")); return isNaN(d) ? 0 : d.getTime(); };
 // A day's own figures carry the clock alone, "20:56:36", where a longer period
 // carries the whole stamp. A bare clock will not parse, so the day goes back on
@@ -963,14 +1025,20 @@ function layout() {
   // where the class is, and not where the list is built
   document.body.classList.toggle("fit", fit);
   sizeIndex();
+  document.body.classList.remove("has-newest");   // set below, once a drawn creature turns out to be the latest
   if (!opt.plate) { plateEl.style.height = ""; return; }
   fitPlate();
   const CW = plateEl.clientWidth, CH = plateEl.clientHeight;
-  const shown = listed().slice(0, CONFIG.maxOnPlate).filter(s => figures.has(s.sci));
+  const shown = plateList().filter(s => figures.has(s.sci));
   if (!shown.length || !CW || !CH) return;
-  const max = shown[0].count, ar = CW / CH;
+  /* Sized by time it is the order that counts, not the gap: a morning's birds
+     would otherwise come out all of a size, and one from yesterday a speck. */
+  const byTime = opt.sizeBy === "time", alike = opt.sizeBy === "equal", place = new Map();
+  if (byTime) shown.forEach((s, i) => place.set(s.sci, shown.length - i));
+  const max = alike ? 1 : byTime ? shown.length : shown[0].count, ar = CW / CH;
   const items = shown.map(s => {
-    const f = figures.get(s.sci), scale = Math.max(.2, Math.pow(s.count / max, .45)), area = f.blank ? .03 : scale * scale;
+    const weight = alike ? 1 : byTime ? place.get(s.sci) : s.count;
+    const f = figures.get(s.sci), scale = Math.max(.2, Math.pow(weight / max, .45)), area = f.blank ? .03 : scale * scale;
     return { s, f, w: Math.sqrt(area * f.aspect), h: Math.sqrt(area / f.aspect) };
   }).sort((a, b) => b.w * b.h - a.w * a.h);
   const placed = [], gap = .035, step = .03;   // gap: clear space kept between neighbouring birds
@@ -990,9 +1058,12 @@ function layout() {
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (const p of placed) { x0 = Math.min(x0, p.cx - p.w / 2); x1 = Math.max(x1, p.cx + p.w / 2); y0 = Math.min(y0, p.cy - p.h / 2); y1 = Math.max(y1, p.cy + p.h / 2); }
   const k = Math.min(CW / (x1 - x0), CH / (y1 - y0)), ox = (CW - (x1 - x0) * k) / 2, oy = (CH - (y1 - y0) * k) / 2;
-  const onPlate = new Set();
+  const onPlate = new Set(), newest = newestSci();
+  // only a plate that actually draws the latest creature may stand the rest back
+  if (newest) document.body.classList.toggle("has-newest", placed.some(p => p.s.sci === newest));
   placed.forEach((p, i) => {
     const b = p.f.button; onPlate.add(b);
+    b.classList.toggle("newest", p.s.sci === newest);
     b.style.width = p.w * k + "px"; b.style.height = p.h * k + "px";
     b.style.transform = "translate(" + (ox + (p.cx - p.w / 2 - x0) * k) + "px," + (oy + (p.cy - p.h / 2 - y0) * k) + "px)";
     b.style.zIndex = p.f.blank ? "4" : String(1 + Math.round((p.cy - y0) * 3));
@@ -1048,9 +1119,19 @@ function renderHeading() {
   document.querySelectorAll("nav button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.p === period)));
 }
 
+// The creature heard most recently, by the time of its last call; nothing if
+// the station gives no times.
+function newestSci() {
+  let best = "", at = 0;
+  for (const s of species) { const t = ts(s.last); if (t > at) { at = t; best = s.sci; } }
+  return best;
+}
+
 function renderIndex() {
+  const newest = newestSci();
   $("#index").replaceChildren(...listed().map(sp => {
     const li = document.createElement("li"), b = document.createElement("button"), f = figures.get(sp.sci);
+    if (sp.sci === newest) li.className = "newest";
     b.innerHTML = '<span class="c">' + esc(sp.common) + (f && f.blank ? ' <span class="x">(no plate)</span>' : "") + '</span><span class="n">' + sp.count.toLocaleString() + "</span>";
     b.title = sp.sci; b.addEventListener("click", () => openDetail(sp)); li.append(b); return li;
   }));
@@ -1127,10 +1208,54 @@ async function refresh(initial) {
     catch (e) {
       if (!initial && species.length && !demo) { busy = false; return; }   // keep what we have through a hiccup
       demo = true; rows = sample(1);
-      noStation(e);
+      const msg = !SOURCE.set ? "No station yet."
+        : !(e instanceof TypeError) ? e.message
+        : SOURCE.bw ? "BirdWeather could not be reached" + (SOURCE.endpoint === "graphql" ? " through this page's address" : "") + "."
+        : "BirdNET-Go could not be reached" + (server ? " at " + server : " through this page's address") + ".";
+      $("#notice").innerHTML = esc(msg)
+        + (SOURCE.set ? " Showing a sample plate instead. " : " This is a sample plate; name a station to see your own birds. ")
+        + "<button id='fix'>Open station settings</button>";
+      $("#fix").addEventListener("click", () => openSettings());
     }
-    await draw(rows);
-  } finally { busy = false; }
+    // the last-heard time counts as a change: the dot, the index's red name and
+    // sizing by time all read it, so a plate can need redrawing on a stamp alone
+    const sig = period + "|" + rows.map(s => s.sci + ":" + s.count + ":" + s.last).join(",");
+    species = rows;
+    if (sig === lastSig) { busy = false; return; }
+    lastSig = sig;
+    renderHeading();
+    if (!rows.length) {
+      for (const [, f] of figures) f.button.remove();
+      statusEl.innerHTML = period === "today" ? "Nothing heard yet today. The plate fills in as birds call. <button id='wk'>Look at the last seven days</button>" : "No detections in this period.";
+      const wk = $("#wk"); if (wk) wk.addEventListener("click", () => setPeriod("week"));
+      renderIndex(); busy = false; return;
+    }
+    const top = opt.plate ? plateList() : [], missing = top.filter(s => !figures.has(s.sci));
+    let done = 0;
+    if (missing.length > 3) statusEl.textContent = "Preparing the plate…";
+    await pool(top, 6, async sp => { await ensureFigure(sp); if (missing.length > 3 && !figures.get(sp.sci).button.isConnected) statusEl.textContent = "Preparing the plate… " + (++done) + " of " + missing.length; });
+    statusEl.textContent = "";
+    renderIndex(); layout(); renderLatest();
+  } finally { busy = false; drainRedraw(); }
+}
+
+/* A change of what decides a creature's size needs no new detections, only the
+   figures for whichever creatures the plate now wants. Asking the station again
+   would risk a hiccup putting the page into its sample plate for good, so this
+   draws from the rows already in hand. A change made while the plate is busy
+   waits for it rather than being dropped. */
+let redrawWanted = false;
+async function redrawPlate() {
+  if (busy) { redrawWanted = true; return; }
+  busy = true;
+  try {
+    if (species.length) await pool(opt.plate ? plateList() : [], 6, sp => ensureFigure(sp));
+    renderIndex(); layout(); renderLatest();
+  } finally { busy = false; drainRedraw(); }
+}
+function drainRedraw() {
+  if (!redrawWanted) return;
+  redrawWanted = false; redrawPlate();
 }
 
 // Everything the page does with a set of rows, whether they came from the
@@ -1415,7 +1540,8 @@ function openSettings() {
   card.view = ""; card.on = cardDefaults(""); card.period = ""; card.limit = 0;
   $("#cardPeriod").value = ""; $("#cardLimit").value = ""; cardBuild();
   $("#srv").value = store.get("server", "") || CONFIG.server; $("#stn").value = store.get("station", "");
-  $("#fitOpt").checked = fit; $("#partsOpt").checked = store.get("parts", false); settings.showModal();
+  $("#fitOpt").checked = fit; $("#partsOpt").checked = store.get("parts", false);
+  $("#markAt").value = opt.markAt; $("#sizeBy").value = opt.sizeBy; settings.showModal();
 }
 $("#fitOpt").addEventListener("change", e => { fit = e.target.checked; store.set("fit", fit); layout(); });
 $("#partsOpt").addEventListener("change", e => {
@@ -1425,6 +1551,13 @@ document.querySelectorAll("#showOpts [data-opt]").forEach(b => b.addEventListene
   const p = b.dataset.opt; opt[p] = e.target.checked; store.set("show." + p, opt[p]);
   applyOptions(); renderHeading(); renderIndex(); refresh(true);
 }));
+$("#sizeBy").addEventListener("change", e => {
+  opt.sizeBy = sizeKind(e.target.value); store.set("sizeBy", opt.sizeBy);
+  redrawPlate();        // the detections have not changed, only which are drawn
+});
+$("#markAt").addEventListener("change", e => {
+  opt.markAt = markPlace(e.target.value); store.set("markAt", opt.markAt); applyOptions();
+});
 $("#lim").addEventListener("change", e => {
   opt.limit = Math.max(0, Number(e.target.value) || 0); store.set("limit", opt.limit);
   renderHeading(); renderIndex(); refresh(true);
@@ -1432,14 +1565,14 @@ $("#lim").addEventListener("change", e => {
 /* ---------- building one Home Assistant card ---------- */
 const CARD_VIEWS = [["", "Everything"], ["plate", "Collage"], ["index", "Index"], ["latest", "Latest"], ["top", "Top"], ["rare", "Rare"]];
 const LABEL = { title: "Title", date: "Date", totals: "Totals", number: "Plate number", periods: "Period buttons",
-  plate: "Collage", index: "Index", name: "Name", sci: "Scientific name", time: "Time", count: "Calls" };
+  plate: "Collage", index: "Index", mark: "Mark the latest", name: "Name", sci: "Scientific name", time: "Time", count: "Calls" };
 const card = { view: "", on: {}, period: "", limit: 0 };
-const cardFields = v => v === "latest" ? ["name", "sci", "time"] : SINGLE[v] ? ["name", "sci", "count"] : PAGE_PARTS;
+const cardFields = v => v === "latest" ? ["name", "sci", "time"] : SINGLE[v] ? ["name", "sci", "count"] : [...PAGE_PARTS, "mark"];
 function cardDefaults(v) {
   const on = {};
   if (SINGLE[v]) { for (const p of cardFields(v)) on[p] = true; if (v === "latest") on.time = false; }
-  else if (v) on[v] = true;
-  else for (const p of PAGE_PARTS) on[p] = true;
+  else if (v) { on[v] = true; on.mark = true; }
+  else for (const p of [...PAGE_PARTS, "mark"]) on[p] = true;
   return on;
 }
 function cardAddress() {

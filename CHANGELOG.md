@@ -2,26 +2,24 @@
 
 ## Unreleased
 
-- A station that does not answer no longer holds up the page. An address with
-  nothing behind it neither answers nor refuses, so the browser used to sit on
-  it for a quarter of a minute before anything appeared. The sample plate now
-  goes up after two seconds, with a line saying the station is being waited on
-  and a way into Settings; the asking continues underneath, and a station that
-  answers late takes the plate back. A question is held open three quarters of
-  a minute before it is given up on, so a station that takes its time over a
-  wide period is never mistaken for one that is not there.
-- Changing the period says *Asking the station…* in the empty plate, rather than
-  showing nothing while the birds of the period just left fade away.
-- Fixed: a station that was unreachable when the page opened stayed unreachable
-  for as long as the page was open. The sample plate shown in its place stopped
-  the page ever asking again, so a station that came back a minute later went
-  unnoticed until a reload. The page now asks every minute as usual and hands
-  the plate back the moment an answer arrives. A card's address is likewise no
-  longer marked as a sample because the station happened to be down.
-- A hairline rule under *Preparing the plate…*, filling as each plate arrives
-  and carrying a slow sheen so a long wait on a cold lookup does not look like
-  a page that has stopped. It keeps still for anyone who asks their machine for
-  less motion.
+- The collage can be drawn by how lately a creature called rather than how
+  often: the latest largest, the oldest smallest. It then draws the latest
+  creatures rather than the busiest, so the one just heard is certain to be on
+  the plate. Or by nothing at all — no pecking order, every creature given the
+  same area of the plate, which suits a handful of species where one loud bird
+  would dwarf the rest. Under Settings, or `size=time` and `size=equal` in a
+  card's address.
+- The creature heard last is marked: a small dot in the middle of it on the
+  plate, in the madder red of the counts, and its name in the same red in the
+  index. The dot can sit below the creature instead, or give way to the rest
+  of the plate standing back two fifths, leaving the one heard last the only
+  creature at full strength. The whole mark can be switched off. All of it is
+  under Settings, and in a card's address as `mark=below`, `mark=fade` and
+  `hide=mark`.
+- A Support section under Settings, below Credits, with where to raise
+  anything amiss.
+- The collage sits closer under the heading, with a little air beneath it, so
+  the caption and the index keep clear of the birds' feet.
 
 - `BIRDSONG_PORT` moves the page off port 80 inside the container, for anyone
   sharing the host's network with something that already holds it. Eighty
