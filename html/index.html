@@ -315,8 +315,6 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
 
     <details id="showOpts">
       <summary>Show</summary>
-      <label for="lim">Limit species</label>
-      <input id="lim" type="number" min="0" step="1" placeholder="all of them">
       <label class="check"><input type="checkbox" id="fitOpt"> Fit everything on one screen</label>
       <label class="check"><input type="checkbox" data-opt="title"> Title</label>
       <label class="check"><input type="checkbox" data-opt="date"> Date</label>
@@ -326,10 +324,12 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
       <label class="check"><input type="checkbox" data-opt="index"> Index of species</label>
       <label class="check"><input type="checkbox" data-opt="plate"> The collage of birds</label>
       <label class="check">Size the collage by
-        <select id="sizeBy" aria-label="What decides a creature's size"><option value="calls">Noisiest species</option><option value="time">Recent ramblings</option></select></label>
+        <select id="sizeBy" aria-label="What decides a creature's size"><option value="calls">Nosiest species</option><option value="time">Recent ramblings</option></select></label>
       <label class="check"><input type="checkbox" data-opt="mark"> Mark the beast
         <select id="markAt" aria-label="How it is marked"><option value="centre">a dot over its centre</option><option value="below">a dot below it</option><option value="fade">the rest of them faded</option></select></label>
       <label class="check"><input type="checkbox" id="partsOpt"> Offer skulls, wings and eggs among the plates</label>
+      <label for="lim">Limit species</label>
+      <input id="lim" type="number" min="0" step="1" placeholder="all of them">
     </details>
 
     <details id="cardOpts">
