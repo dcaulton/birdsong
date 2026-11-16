@@ -4,10 +4,10 @@
 
 - The creature heard last is marked: a small dot in the middle of it on the
   plate, in the madder red of the counts, and its name in the same red in the
-  index. The dot can sit below the creature instead, or give way to a halo
-  around the creature itself, and the whole mark can be switched off; all of
-  it is under Settings, and in a card's address as `mark=below`, `mark=glow`
-  and `hide=mark`.
+  index. The dot can sit below the creature instead, or give way to a line
+  drawn round the creature itself, and the whole mark can be switched off; all
+  of it is under Settings, and in a card's address as `mark=below`,
+  `mark=outline` and `hide=mark`.
 
 - `BIRDSONG_PORT` moves the page off port 80 inside the container, for anyone
   sharing the host's network with something that already holds it. Eighty
