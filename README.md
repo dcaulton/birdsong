@@ -271,7 +271,7 @@ puts the date and the period buttons back above it. Going the other way,
 |---|---|
 | `period=today` `week` `month` `all` | fixes the period for that card, whatever the page is set to |
 | `limit=20` | shows only the twenty most-heard species |
-| `size=calls` `time` `equal` | what decides a creature's size on the collage: how often it called, how lately it called, or nothing — all of a size |
+| `size=calls` `time` `equal` | what decides a creature's size on the collage: how often it called, how lately it called, or nothing at all — no pecking order, every creature the same size |
 
 `limit` is worth setting on an index card, which otherwise scrolls, and on
 a collage card to keep the birds large. `size=equal` suits a plate of a
