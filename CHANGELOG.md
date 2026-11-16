@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- The collage can be drawn by how lately a creature called rather than how
+  often: the latest largest, the oldest smallest. It then draws the latest
+  creatures rather than the busiest, so the one just heard is certain to be on
+  the plate. Under Settings, or `size=time` in a card's address.
 - The creature heard last is marked: a small dot in the middle of it on the
   plate, in the madder red of the counts, and its name in the same red in the
   index. The dot can sit below the creature instead, or give way to the rest

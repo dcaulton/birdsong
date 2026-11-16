@@ -50,6 +50,9 @@ including a little owl heard in the small hours.
   - the latest recordings, with the weather at the time, playback and a
     spectrogram
   - other illustrations of the species to choose from
+- **The collage is drawn by how often a creature called**, the busiest the
+  largest. It can be drawn by how lately instead, newest largest and oldest
+  smallest, under Settings. The index keeps its own order either way.
 - **The creature heard last** is marked: a small red *o* in the middle of it on
   the plate, and its name in red in the index. Switch it off under Settings.
 - **One-screen mode** (on by default): the plate shrinks so the index

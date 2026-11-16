@@ -137,7 +137,7 @@ body.latest header,body.latest footer{display:none}
 #settings #cardPeriod,#settings #cardLimit{width:auto;padding:.25rem .4rem;font:inherit;border:1px solid var(--sepia);background:#f6efdc;color:var(--ink)}
 #settings #cardLimit{width:4.5rem}
 #settings #cardPeriod{max-width:10rem}
-#settings #markAt{display:inline-block;width:auto;font:inherit;font-size:.9rem;padding:.05rem .2rem;margin-left:.2rem}
+#settings #markAt,#settings #sizeBy{display:inline-block;width:auto;font:inherit;font-size:.9rem;padding:.05rem .2rem;margin-left:.2rem}
 #settings #cardUrl{flex:1;min-width:11rem}
 #copyUrl{margin:0;white-space:nowrap}
 /* the preview is laid out as a card of 500x300 and scaled down to fit the box,
@@ -326,6 +326,8 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
       <label class="check"><input type="checkbox" data-opt="mark"> Mark the creature heard last
         <select id="markAt" aria-label="How it is marked"><option value="centre">a dot over its centre</option><option value="below">a dot below it</option><option value="fade">the rest of them faded</option></select></label>
       <label class="check"><input type="checkbox" id="partsOpt"> Offer skulls, wings and eggs among the plates</label>
+      <label class="check">Size the collage by
+        <select id="sizeBy" aria-label="What decides a creature's size"><option value="calls">how often it called</option><option value="time">how lately it called</option></select></label>
       <label for="lim">Limit species</label>
       <input id="lim" type="number" min="0" step="1" placeholder="all of them">
     </details>
@@ -492,6 +494,10 @@ const markPlace = v => {
   return MARK_AT.includes(t) ? t : "centre";
 };
 opt.markAt = markPlace(params.get("mark") || store.get("markAt", "centre"));
+// what decides a creature's size on the plate: how often it called, or how
+// lately (&size=time)
+const sizeKind = v => /^time$/i.test(String(v || "")) ? "time" : "calls";
+opt.sizeBy = sizeKind(params.get("size") || store.get("sizeBy", "calls"));
 if (view === "latest") opt.time = false;              // the time is off by default: the card is prettier without it
 opt.limit = Math.max(0, Number(params.get("limit")) || store.get("limit", 0));
 // a view shows only its own subject; show= puts any of the rest back
@@ -512,6 +518,12 @@ function applyOptions() {
   sizeIndex();   // one-screen mode uses narrower columns
 }
 const listed = () => opt.limit ? species.slice(0, opt.limit) : species;
+/* The creatures the plate draws. Sized by calls it takes the busiest; sized by
+   time, the latest -- otherwise the one heard a minute ago might not be on the
+   plate at all. The index keeps its own order either way. */
+const plateList = () => (opt.sizeBy === "time"
+  ? [...listed()].sort((a, b) => ts(b.last) - ts(a.last))
+  : listed()).slice(0, CONFIG.maxOnPlate);
 const ts = v => { const d = new Date(String(v || "").replace(" ", "T")); return isNaN(d) ? 0 : d.getTime(); };
 // A day's own figures carry the clock alone, "20:56:36", where a longer period
 // carries the whole stamp. A bare clock will not parse, so the day goes back on
@@ -960,11 +972,16 @@ function layout() {
   if (!opt.plate) { plateEl.style.height = ""; return; }
   fitPlate();
   const CW = plateEl.clientWidth, CH = plateEl.clientHeight;
-  const shown = listed().slice(0, CONFIG.maxOnPlate).filter(s => figures.has(s.sci));
+  const shown = plateList().filter(s => figures.has(s.sci));
   if (!shown.length || !CW || !CH) return;
-  const max = shown[0].count, ar = CW / CH;
+  /* Sized by time it is the order that counts, not the gap: a morning's birds
+     would otherwise come out all of a size, and one from yesterday a speck. */
+  const byTime = opt.sizeBy === "time", place = new Map();
+  if (byTime) shown.forEach((s, i) => place.set(s.sci, shown.length - i));
+  const max = byTime ? shown.length : shown[0].count, ar = CW / CH;
   const items = shown.map(s => {
-    const f = figures.get(s.sci), scale = Math.max(.2, Math.pow(s.count / max, .45)), area = f.blank ? .03 : scale * scale;
+    const weight = byTime ? place.get(s.sci) : s.count;
+    const f = figures.get(s.sci), scale = Math.max(.2, Math.pow(weight / max, .45)), area = f.blank ? .03 : scale * scale;
     return { s, f, w: Math.sqrt(area * f.aspect), h: Math.sqrt(area / f.aspect) };
   }).sort((a, b) => b.w * b.h - a.w * a.h);
   const placed = [], gap = .035, step = .03;   // gap: clear space kept between neighbouring birds
@@ -1113,7 +1130,7 @@ async function refresh(initial) {
       const wk = $("#wk"); if (wk) wk.addEventListener("click", () => setPeriod("week"));
       renderIndex(); busy = false; return;
     }
-    const top = opt.plate ? listed().slice(0, CONFIG.maxOnPlate) : [], missing = top.filter(s => !figures.has(s.sci));
+    const top = opt.plate ? plateList() : [], missing = top.filter(s => !figures.has(s.sci));
     let done = 0;
     if (missing.length > 3) statusEl.textContent = "Preparing the plate…";
     await pool(top, 6, async sp => { await ensureFigure(sp); if (missing.length > 3 && !figures.get(sp.sci).button.isConnected) statusEl.textContent = "Preparing the plate… " + (++done) + " of " + missing.length; });
@@ -1379,7 +1396,7 @@ function openSettings() {
   $("#cardPeriod").value = ""; $("#cardLimit").value = ""; cardBuild();
   $("#srv").value = store.get("server", "") || CONFIG.server; $("#stn").value = store.get("station", "");
   $("#fitOpt").checked = fit; $("#partsOpt").checked = store.get("parts", false);
-  $("#markAt").value = opt.markAt; settings.showModal();
+  $("#markAt").value = opt.markAt; $("#sizeBy").value = opt.sizeBy; settings.showModal();
 }
 $("#fitOpt").addEventListener("change", e => { fit = e.target.checked; store.set("fit", fit); layout(); });
 $("#partsOpt").addEventListener("change", e => {
@@ -1389,6 +1406,11 @@ document.querySelectorAll("#showOpts [data-opt]").forEach(b => b.addEventListene
   const p = b.dataset.opt; opt[p] = e.target.checked; store.set("show." + p, opt[p]);
   applyOptions(); renderHeading(); renderIndex(); refresh(true);
 }));
+$("#sizeBy").addEventListener("change", e => {
+  opt.sizeBy = sizeKind(e.target.value); store.set("sizeBy", opt.sizeBy);
+  lastSig = "";         // the figures have not changed, but which are drawn has
+  refresh(true);
+});
 $("#markAt").addEventListener("change", e => {
   opt.markAt = markPlace(e.target.value); store.set("markAt", opt.markAt); applyOptions();
 });
