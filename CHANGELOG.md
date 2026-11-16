@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- A station that does not answer no longer holds up the page. An address with
+  nothing behind it neither answers nor refuses, so the browser used to sit on
+  it for a quarter of a minute before anything appeared. The sample plate now
+  goes up after two seconds, with a line saying the station is being waited on
+  and a way into Settings; the asking continues underneath, and a station that
+  answers late takes the plate back. Questions are given twelve seconds while
+  there is nothing on the page, thirty once there is.
+- Fixed: a station that was unreachable when the page opened stayed unreachable
+  for as long as the page was open. The sample plate shown in its place stopped
+  the page ever asking again, so a station that came back a minute later went
+  unnoticed until a reload. The page now asks every minute as usual and hands
+  the plate back the moment an answer arrives. A card's address is likewise no
+  longer marked as a sample because the station happened to be down.
 - A hairline rule under *Preparing the plate…*, filling as each plate arrives
   and carrying a slow sheen so a long wait on a cold lookup does not look like
   a page that has stopped. It keeps still for anyone who asks their machine for
