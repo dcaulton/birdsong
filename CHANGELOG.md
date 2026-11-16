@@ -5,14 +5,21 @@
 - The collage can be drawn by how lately a creature called rather than how
   often: the latest largest, the oldest smallest. It then draws the latest
   creatures rather than the busiest, so the one just heard is certain to be on
-  the plate. Under Settings, or `size=time` in a card's address.
+  the plate. Or by nothing at all — no pecking order, every creature given the
+  same area of the plate, which suits a handful of species where one loud bird
+  would dwarf the rest. Under Settings, or `size=time` and `size=equal` in a
+  card's address.
 - The creature heard last is marked: a small dot in the middle of it on the
   plate, in the madder red of the counts, and its name in the same red in the
   index. The dot can sit below the creature instead, or give way to the rest
-  of the plate standing back a tenth, leaving the one heard last the only
+  of the plate standing back two fifths, leaving the one heard last the only
   creature at full strength. The whole mark can be switched off. All of it is
   under Settings, and in a card's address as `mark=below`, `mark=fade` and
   `hide=mark`.
+- A Support section under Settings, below Credits, with where to raise
+  anything amiss.
+- The collage sits closer under the heading, with a little air beneath it, so
+  the caption and the index keep clear of the birds' feet.
 
 - `BIRDSONG_PORT` moves the page off port 80 inside the container, for anyone
   sharing the host's network with something that already holds it. Eighty

@@ -50,11 +50,17 @@ including a little owl heard in the small hours.
   - the latest recordings, with the weather at the time, playback and a
     spectrogram
   - other illustrations of the species to choose from
-- **The collage is drawn by how often a creature called**, the busiest the
-  largest. It can be drawn by how lately instead, newest largest and oldest
-  smallest, under Settings. The index keeps its own order either way.
-- **The creature heard last** is marked: a small red *o* in the middle of it on
-  the plate, and its name in red in the index. Switch it off under Settings.
+- **What decides a creature's size** is set under Settings, three ways:
+  *Nosiest species*, the busiest the largest, which is how it arrives;
+  *Recent ramblings*, the latest largest and the oldest smallest, which also
+  puts the latest creatures on the plate rather than the busiest, so the one
+  just heard is certain to be there; or *No pecking order*, every creature
+  the same size. The index keeps its own order whichever is chosen.
+- **The creature heard last** is marked, and its name turns red in the index.
+  Three ways, under Settings: a small madder dot over the middle of it, the
+  same dot below it, or no dot at all and the rest of the plate standing back
+  two fifths, leaving the one just heard the only creature at full strength.
+  The whole mark can be switched off.
 - **One-screen mode** (on by default): the plate shrinks so the index
   fits beneath it without scrolling. Switch it off under Settings.
 
@@ -293,6 +299,10 @@ handful of species, where one loud bird would otherwise dwarf the rest.
 
     /?view=plate&show=periods&limit=24&period=month
     a month's collage of 24 birds, with the period buttons
+
+    /?view=plate&period=today&limit=8&size=equal&mark=fade
+    today's eight birds all of a size, the one just heard the only one
+    at full strength
 
     /?hide=title,number,totals
     the whole page, trimmed of its heading furniture
