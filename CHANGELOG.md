@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Fixed: some creatures showed as a white rectangle on the collage instead of a
+  figure on the page. A plate the creature fills more than half of cannot be cut
+  out -- it is a painted scene, not a figure on paper -- so the whole plate is
+  drawn, white paper and all. Those plates are now multiplied into the page the
+  way the detail card has always multiplied them, so their paper melts into the
+  page. Bats showed it worst: they have no Fugleramme cut-outs, and the plates
+  that stand in for them are tight crops.
+- Fixed: the same white behind a plate in the detail card, in a window too small
+  for the card. A scrolled box's contents are drawn in a layer of their own,
+  without the dialog's paper behind them, leaving the plate's multiply blend
+  nothing to melt into. The picture now carries paper of its own.
+
 - The mark on the creature heard last swells with it under the pointer, over
   the same quarter second the figure takes to grow. Both where it sits, over
   the centre and below.

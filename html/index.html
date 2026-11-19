@@ -75,6 +75,11 @@ body.mark-fade .bird.newest::after{display:none}
 body.mark-fade.has-newest:not(.no-mark) .bird.in:not(.newest){opacity:.6}
 body.no-mark .bird.newest::after{display:none}
 .bird.ink>img{filter:url(#paperTint)}   /* tints the cut-out by the paper colour, as the detail card does, so its pale edge melts into the page */
+/* a plate the creature fills too much of to be cut from is drawn whole, white
+   paper and all. Multiplying turns that white into whatever lies behind it,
+   which is the page. On the figure rather than its picture: the figure is
+   placed with a transform, and a transform would keep the blend inside it. */
+.bird.whole{mix-blend-mode:multiply}
 .bird>canvas,.bird>img,.bird>span{display:block;width:100%;height:100%;transition:transform .25s ease-out;transform-origin:50% 60%}
 .bird:hover,.bird:focus-visible{z-index:5}
 .bird:hover>*,.bird:focus-visible>*{transform:scale(1.06)}
@@ -183,7 +188,7 @@ dialog{font:inherit;color:var(--ink);background:var(--paper);border:1px solid va
 dialog::backdrop{background:rgba(42,36,28,.55)}
 .close{position:absolute;top:.9rem;right:1.1rem;font-style:italic;color:var(--sepia);text-decoration:underline;text-underline-offset:3px;font-size:.95rem}
 #card{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:2rem}
-#card figure{margin:0}
+#card figure{margin:0;background:var(--paper)}   /* a card too tall for the window scrolls, and a scrolled box's contents are drawn in a layer of their own, without the dialog's paper behind them: this gives the plate's multiply blend paper of its own to melt into */
 #card figure img{display:block;width:100%;max-height:52vh;object-fit:contain;mix-blend-mode:multiply}
 #card figure img.ink{mix-blend-mode:normal;filter:url(#paperTint)}   /* same paper tint as the main plate; holds up when the card scrolls */
 #dRecWrap{margin-top:1.2rem}
@@ -992,7 +997,7 @@ async function makeFigure(sp, plates) {
     if (cut && cut.cover <= CLEAN) break;
   }
   if (best) return { el: best.cut, aspect: best.cut.width / best.cut.height, plate: best.plate };
-  if (whole) { whole.img.alt = ""; return { el: whole.img, aspect: whole.img.naturalWidth / whole.img.naturalHeight, plate: whole.plate }; }
+  if (whole) { whole.img.alt = ""; return { el: whole.img, aspect: whole.img.naturalWidth / whole.img.naturalHeight, plate: whole.plate, whole: true }; }
   const ph = plates.find(p => p.photo), photo = (ph && ph.src) || sp.thumb;
   if (photo) {
     try { const img = await loadImage(photo, false); img.alt = ""; return { el: img, aspect: img.naturalWidth / img.naturalHeight, plate: ph || { src: photo, large: photo, photo: true, credit: "Photograph supplied by " + SOURCE.name + "." } }; } catch (e) {}
@@ -1096,7 +1101,7 @@ async function ensureFigure(sp, force) {
   if (have && !force) { have.sp = sp; have.button.setAttribute("aria-label", sp.common + ", " + calls(sp.count)); return; }
   const fig = await makeFigure(sp, await choosePlates(sp)), plate = fig.plate;
   const b = have ? have.button : document.createElement("button");
-  b.className = "bird" + (have ? " in" : "") + (plate && plate.ready ? " ink" : ""); b.replaceChildren(fig.el);
+  b.className = "bird" + (have ? " in" : "") + (plate && plate.ready ? " ink" : "") + (fig.whole ? " whole" : ""); b.replaceChildren(fig.el);
   b.setAttribute("aria-label", sp.common + ", " + calls(sp.count));
   const rec = { button: b, aspect: fig.aspect, plate, sp, blank: !!fig.blank };
   if (!have) {
