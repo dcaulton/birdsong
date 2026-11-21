@@ -327,9 +327,9 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
         <div class="barlab"><span>midnight</span><span>6</span><span>noon</span><span>18</span><span>24</span></div>
       </div>
       <div id="dTrendWrap" hidden>
-        <p class="small">Calls each day, the last thirty days</p>
+        <p class="small">Calls each day</p>
         <div class="bars" id="trend"></div>
-        <div class="barlab"><span id="trendFrom"></span><span>today</span></div>
+        <div class="barlab"><span id="trendFrom"></span><span id="trendTo"></span></div>
       </div>
 
       <p class="small" id="altLabel">Other plates of this species</p>
@@ -1557,11 +1557,23 @@ async function loadExtras(sp) {
     renderBars($("#hours"), h, (n, i) => i + ":00, " + calls(n)); $("#dHoursWrap").hidden = false;
   }).catch(() => {});
 
-  // calls per day, last thirty days
+  // calls per day, for the period on the plate
   getJSON("/api/v2/analytics/time/daily?species=" + q + "&" + plateQuery().slice(1)).then(j => {
     if (!still()) return;
     const got = {}; ((j && j.data) || []).forEach(d => got[String(d.date).slice(0, 10)] = d.count);
-    showTrend(Array.from({ length: 30 }, (_, i) => { const d = ymd(daysAgo(29 - i)); return { date: d, count: got[d] || 0 }; }));
+    const span = spans[Number(document.getElementById("month").value)] || spans[0];
+    let days;
+    if (span.start) {
+      const from = new Date(span.start + "T12:00"), to = new Date(span.end + "T12:00");
+      days = [];
+      for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) {
+        const key = ymd(d);
+        days.push({ date: key, count: got[key] || 0 });
+      }
+    } else {
+      days = Array.from({ length: 30 }, (_, i) => { const d = ymd(daysAgo(29 - i)); return { date: d, count: got[d] || 0 }; });
+    }
+    showTrend(days);
   }).catch(() => {});
 
   // family, order and how usual the bird is here
@@ -1576,7 +1588,9 @@ async function loadExtras(sp) {
 
   function showTrend(days) {
     renderBars($("#trend"), days.map(d => d.count), (n, i) => dayLabel(days[i].date) + ", " + calls(n));
-    $("#trendFrom").textContent = dayLabel(days[0].date); $("#dTrendWrap").hidden = false;
+    $("#trendFrom").textContent = dayLabel(days[0].date);
+    $("#trendTo").textContent = dayLabel(days[days.length - 1].date);
+    $("#dTrendWrap").hidden = false;
   }
   function showRecs(rows, live) {
     const spec = $("#spec"); spec.hidden = true;
