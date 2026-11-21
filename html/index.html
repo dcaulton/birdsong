@@ -263,10 +263,14 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
   </div>
   <div id="plateno"><span id="pl"></span><button id="openSettings">Settings</button></div>
   <nav aria-label="Period">
-    <button data-p="today" aria-pressed="false">Today</button>
-    <button data-p="week" aria-pressed="true">Seven days</button>
-    <button data-p="month" aria-pressed="false">Thirty days</button>
-    <button data-p="all" aria-pressed="false">Since records began</button>
+    <select id="month" aria-label="Month"></select>
+    <select id="gate" aria-label="Confirmation">
+      <option value="confirmed">Confirmed</option>
+      <option value="local">Local</option>
+      <option value="rare">Rare</option>
+      <option value="all">Everything</option>
+    </select>
+    <input id="clades" type="text" placeholder="Turdus, Strix, -Insecta" aria-label="Clades" style="font:inherit;color:inherit;background:transparent;border:0;border-bottom:1px solid currentColor;width:14rem">
   </nav>
   <p id="notice"></p>
 </header>
@@ -648,11 +652,10 @@ let period = PERIODS.includes(urlPeriod) ? urlPeriod : store.get("period", "week
 async function fetchSpecies(ms) {
   if (forcedDemo) return sample(demoPlate);
   if (SOURCE.bw) return fetchSpeciesBW(ms);
-  let path;
   const day = ymd(new Date());
-  if (period === "today") path = "/api/v2/analytics/species/daily?date=" + day;
-  else if (period === "all") path = "/api/v2/analytics/species/summary";
-  else path = "/api/v2/analytics/species/summary?start_date=" + ymd(daysAgo(period === "week" ? 6 : 29)) + "&end_date=" + day;
+  const extra = plateQuery();
+  let path = "/api/v2/analytics/species/summary" + extra;
+  if (period === "today") path = "/api/v2/analytics/species/daily?date=" + day + "&" + extra.slice(1);
   const r = await askFor(server + path, { headers: { Accept: "application/json" } }, ms);
   if (r.status === 401 || r.status === 403) throw new Error("BirdNET-Go asked for a sign-in. Allow this page's address under its security settings, or turn off private mode.");
   if (!r.ok) throw new Error("BirdNET-Go answered with error " + r.status + ".");
@@ -1298,12 +1301,52 @@ async function draw(rows) {
 function setPeriod(p) {
   period = p; if (!urlPeriod) store.set("period", p); lastSig = "";
   for (const [, f] of figures) { f.button.classList.remove("in"); }
-  // the birds of the period just left have been faded out, so say what is
-  // happening in the space they leave rather than showing an empty plate
   setStatus("Asking the station…", 0);
   renderHeading(); refresh(true);
 }
-document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => setPeriod(b.dataset.p)));
+function monthSpans() {
+  const out = [{ label: "All time", start: "", end: "" }];
+  const now = new Date();
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    out.push({
+      label: d.toLocaleDateString(undefined, { month: "long", year: "numeric" }),
+      start: ymd(d),
+      end: ymd(last),
+    });
+  }
+  return out;
+}
+const spans = monthSpans();
+const monthEl = document.getElementById("month");
+spans.forEach((s, i) => {
+  const o = document.createElement("option");
+  o.value = String(i); o.textContent = s.label; monthEl.appendChild(o);
+});
+monthEl.value = store.get("monthIdx", "1");
+document.getElementById("gate").value = store.get("gate", "confirmed");
+document.getElementById("clades").value = store.get("clades", "");
+function plateQuery() {
+  const span = spans[Number(monthEl.value)] || spans[0];
+  const gate = document.getElementById("gate").value || "confirmed";
+  const clades = document.getElementById("clades").value.trim();
+  const parts = ["gate=" + encodeURIComponent(gate)];
+  if (span.start) parts.push("start_date=" + span.start, "end_date=" + span.end);
+  if (clades) parts.push("clades=" + encodeURIComponent(clades));
+  return "?" + parts.join("&");
+}
+function reloadPlate() {
+  store.set("monthIdx", monthEl.value);
+  store.set("gate", document.getElementById("gate").value);
+  store.set("clades", document.getElementById("clades").value);
+  lastSig = "";
+  setStatus("Asking the station…", 0);
+  renderHeading(); refresh(true);
+}
+monthEl.addEventListener("change", reloadPlate);
+document.getElementById("gate").addEventListener("change", reloadPlate);
+document.getElementById("clades").addEventListener("change", reloadPlate);
 
 /* ---------- the latest bird, for a card of its own ---------- */
 let latestOf = "";
@@ -1494,14 +1537,14 @@ async function loadExtras(sp) {
   }
 
   // hour-of-day pattern for periods longer than a day
-  if (!sp.hourly) getJSON("/api/v2/analytics/time/distribution/hourly?species=" + q + "&start_date=" + (period === "all" ? "2000-01-01" : ymd(daysAgo(period === "week" ? 6 : 29))) + "&end_date=" + today).then(rows => {
+  if (!sp.hourly) getJSON("/api/v2/analytics/time/distribution/hourly?species=" + q + "&" + plateQuery().slice(1)).then(rows => {
     if (!still() || !Array.isArray(rows)) return;
     const h = new Array(24).fill(0); rows.forEach(r => { if (r.hour >= 0 && r.hour < 24) h[r.hour] = r.count; });
     renderBars($("#hours"), h, (n, i) => i + ":00, " + calls(n)); $("#dHoursWrap").hidden = false;
   }).catch(() => {});
 
   // calls per day, last thirty days
-  getJSON("/api/v2/analytics/time/daily?species=" + q + "&start_date=" + from + "&end_date=" + today).then(j => {
+  getJSON("/api/v2/analytics/time/daily?species=" + q + "&" + plateQuery().slice(1)).then(j => {
     if (!still()) return;
     const got = {}; ((j && j.data) || []).forEach(d => got[String(d.date).slice(0, 10)] = d.count);
     showTrend(Array.from({ length: 30 }, (_, i) => { const d = ymd(daysAgo(29 - i)); return { date: d, count: got[d] || 0 }; }));
@@ -1511,7 +1554,7 @@ async function loadExtras(sp) {
   getJSON("/api/v2/species?scientific_name=" + q).then(info => { if (still() && info) renderFacts(sp, info); }).catch(() => {});
 
   // the latest recordings, with weather at the time
-  getJSON("/api/v2/detections?species=" + q + "&numResults=4&includeWeather=true").then(j => {
+  getJSON("/api/v2/detections?species=" + q + "&numResults=4&" + plateQuery().slice(1)).then(j => {
     if (!still()) return;
     const rows = Array.isArray(j) ? j : (j && j.data) || [];
     if (rows.length) showRecs(rows.slice(0, 4), true);
