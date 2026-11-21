@@ -43,6 +43,14 @@ nav{grid-column:2;grid-row:1;display:flex;flex-wrap:wrap;justify-content:center;
 nav button{font-size:1rem;color:var(--sepia);padding:.1rem 0}
 nav button[aria-pressed="true"]{color:var(--madder);font-style:italic}
 nav button:hover{color:var(--ink)}
+nav select, nav input{
+  font-family:var(--serif);font-size:1rem;color:var(--sepia);
+  background:transparent;border:0;border-bottom:1px solid var(--rule);
+  padding:.1rem .2rem;appearance:none;-webkit-appearance:none;
+}
+nav select{padding-right:1rem;background-image:linear-gradient(45deg,transparent 50%,var(--sepia) 50%),linear-gradient(135deg,var(--sepia) 50%,transparent 50%);background-position:right .2rem center,right .55rem center;background-size:.35rem .35rem,.35rem .35rem;background-repeat:no-repeat}
+nav select:focus, nav input:focus{outline:0;color:var(--ink);border-bottom-color:var(--ink)}
+nav input::placeholder{color:var(--rule);font-style:italic}
 #notice{grid-column:1/-1;margin:.2rem 0 0;font-size:.95rem;color:var(--madder)}
 #notice button{text-decoration:underline;text-underline-offset:3px}
 #notice:empty{display:none}
@@ -270,7 +278,7 @@ dd.big{color:var(--madder);font-size:1.3rem;line-height:1.2}
       <option value="rare">Rare</option>
       <option value="all">Everything</option>
     </select>
-    <input id="clades" type="text" placeholder="Turdus, Strix, -Insecta" aria-label="Clades" style="font:inherit;color:inherit;background:transparent;border:0;border-bottom:1px solid currentColor;width:14rem">
+    <input id="clades" type="text" placeholder="Turdus, Strix, -Insecta" aria-label="Clades">
   </nav>
   <p id="notice"></p>
 </header>
@@ -1127,13 +1135,19 @@ async function pool(list, n, fn) {
    =================================================================== */
 function renderHeading() {
   const now = new Date(), total = species.reduce((a, s) => a + s.count, 0);
-  const span = { today: longDate(now), week: "The seven days to " + longDate(now), month: "The thirty days to " + longDate(now), all: "Every day on record, to " + longDate(now) }[period];
-  $("#subDate").textContent = span + ".";
+  const span = spans[Number(document.getElementById("month").value)] || spans[0];
+  let text;
+  if (!span.start) text = "Every day on record, to " + longDate(now);
+  else {
+    const from = new Date(span.start + "T12:00");
+    const to = new Date(span.end + "T12:00");
+    text = longDate(from) + " to " + longDate(to);
+  }
+  $("#subDate").textContent = text + ".";
   $("#subTotals").textContent = species.length ? species.length + " species from " + calls(total) + "." : "";
   const doy = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 864e5);
   $("#pl").textContent = "Plate " + roman(doy);
   $("#pl").title = "Day " + doy + " of " + now.getFullYear();
-  document.querySelectorAll("nav button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.p === period)));
 }
 
 // The creature heard most recently, by the time of its last call; nothing if
